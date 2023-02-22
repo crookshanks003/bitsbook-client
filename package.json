@@ -20,6 +20,8 @@
         "@chakra-ui/react": "^2.5.1",
         "@emotion/react": "^11.10.6",
         "@emotion/styled": "^11.10.6",
+        "@fontsource/inter": "^4.5.15",
+        "@fontsource/merriweather": "^4.5.14",
         "framer-motion": "^9.0.7",
         "localforage": "^1.10.0",
         "match-sorter": "^6.3.1",
