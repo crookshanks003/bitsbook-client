@@ -1,3 +1,9 @@
+import { Heading, Box } from '@chakra-ui/react';
+
 export function Login() {
-    return <h1>Login</h1>;
+    return (
+        <Box mt={4}>
+            <Heading>Login</Heading>
+        </Box>
+    );
 }
