@@ -8,7 +8,29 @@ import '@fontsource/inter/600.css';
 import '@fontsource/inter/700.css';
 import '@fontsource/inter/800.css';
 
-import { extendTheme, withDefaultColorScheme } from '@chakra-ui/react';
+import { ComponentStyleConfig, extendTheme, withDefaultColorScheme } from '@chakra-ui/react';
+
+const DefaultButton: ComponentStyleConfig = {
+    baseStyle: {
+        rounded: 'full',
+        bgColor: 'pink.500',
+    },
+    variants: {
+        outline: {
+            borderColor: 'pink.500',
+            color: 'pink.500',
+            _hover: {
+                bgColor: 'pink.500',
+                color: 'white',
+            },
+        },
+        solid: {
+            _hover: {
+                bgColor: 'pink.400',
+            },
+        },
+    },
+};
 
 export const theme = extendTheme(
     {
@@ -28,6 +50,9 @@ export const theme = extendTheme(
         fonts: {
             heading: 'Playfair Display',
             body: 'Inter, sans-serif',
+        },
+        components: {
+            Button: DefaultButton,
         },
     },
     withDefaultColorScheme({ colorScheme: 'pink' }),

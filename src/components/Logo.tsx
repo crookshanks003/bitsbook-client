@@ -1,7 +1,7 @@
 export function Logo({ width }: { width: string }) {
     return (
         <div>
-            <svg viewBox='0 0 410.64 110.246' width={width} height='auto' xmlns='http://www.w3.org/2000/svg'>
+            <svg viewBox='0 0 410.64 110.246' width={width} xmlns='http://www.w3.org/2000/svg'>
                 <path
                     d='M 109.688 55.123 C 109.688 85.567 85.134 110.246 54.844 110.246 C 24.554 110.246 0 85.567 0 55.123 C 0 24.679 24.554 0 54.844 0 C 85.134 0 109.688 24.679 109.688 55.123 Z'
                     style={{ stroke: 'rgb(0, 0, 0)', fill: 'rgb(213, 63, 140)', strokeWidth: '0px' }}
