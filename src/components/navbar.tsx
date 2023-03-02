@@ -14,10 +14,13 @@ import {
     Stack,
     MenuDivider,
     Link,
+    Spinner,
 } from '@chakra-ui/react';
 import { MdOutlineClose, MdMenu } from 'react-icons/md';
 import Logo from './logo';
 import NextLink from 'next/link';
+import { useQuery } from 'react-query';
+import { getRole } from '@/services/user';
 
 const NavLink = ({ children, href }: { children: ReactNode; href: string }) => (
     <NextLink href={href} passHref legacyBehavior>
@@ -44,13 +47,14 @@ const NavLink = ({ children, href }: { children: ReactNode; href: string }) => (
 export default function Navbar() {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const links = [
-        { name: 'Home', href: '/home' },
-        { name: 'Login', href: '/login' },
-        { name: 'Search', href: '/search' },
+        { name: 'Home', href: '/' },
+        { name: 'Clubs', href: '/clubs' },
+        { name: 'Notices', href: '/notices' },
         { name: 'History', href: '/history' },
     ];
 
-    const data = { name: 'Pritesh', role: 'ADMIN' };
+    const { data, isLoading } = useQuery('getRole', getRole, { retry: 1 });
+    const user = { name: 'Pritesh', role: 'ADMIN' };
 
     const logOut = () => {
         console.log('Logged Out');
@@ -58,7 +62,13 @@ export default function Navbar() {
 
     return (
         <Box bg='white' borderBottom='1px' borderColor='blackAlpha.300'>
-            <Flex py='3' alignItems={'center'} justifyContent={'space-between'} width={['98%', '90%', '80%']} mx='auto'>
+            <Flex
+                py='3'
+                alignItems={'center'}
+                justifyContent={'space-between'}
+                width={['98%', '90%', '80%']}
+                mx='auto'
+            >
                 <IconButton
                     colorScheme='gray'
                     size={'sm'}
@@ -80,26 +90,40 @@ export default function Navbar() {
                     ))}
                 </HStack>
                 <Flex alignItems={'center'}>
-                    <Menu>
-                        <MenuButton
-                            as={Button}
-                            rounded={'full'}
-                            variant={'link'}
-                            cursor={'pointer'}
-                            background='gray.700'
-                            minW={0}
-                        >
-                            <Avatar size='sm' src={undefined} name={data.name} background='pink.500' color='white' />
-                        </MenuButton>
-                        <MenuList>
-                            <MenuItem onClick={() => console.log('go to profile')}>Profile</MenuItem>
-                            {data.role == 'ADMIN' && (
-                                <MenuItem onClick={() => console.log('go to admin')}>Admin</MenuItem>
-                            )}
-                            <MenuDivider />
-                            <MenuItem onClick={logOut}>Log out</MenuItem>
-                        </MenuList>
-                    </Menu>
+                    {!isLoading ? (
+                        <Menu>
+                            <MenuButton
+                                as={Button}
+                                rounded={'full'}
+                                variant={'link'}
+                                cursor={'pointer'}
+                                background='gray.700'
+                                minW={0}
+                            >
+                                <Avatar
+                                    size='sm'
+                                    src={undefined}
+                                    name={user.name}
+                                    background='pink.500'
+                                    color='white'
+                                />
+                            </MenuButton>
+                            <MenuList>
+                                <MenuItem onClick={() => console.log('go to profile')}>
+                                    Profile
+                                </MenuItem>
+                                {data?.data === 'admin' && (
+                                    <MenuItem as={NextLink} href='/admin'>
+                                        Admin
+                                    </MenuItem>
+                                )}
+                                <MenuDivider />
+                                <MenuItem onClick={logOut}>Log out</MenuItem>
+                            </MenuList>
+                        </Menu>
+                    ) : (
+                        <Spinner size='xs' />
+                    )}
                 </Flex>
             </Flex>
 
