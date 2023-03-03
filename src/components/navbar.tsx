@@ -15,6 +15,7 @@ import {
     MenuDivider,
     Link,
     Spinner,
+    Spacer,
 } from '@chakra-ui/react';
 import { MdOutlineClose, MdMenu } from 'react-icons/md';
 import Logo from './logo';
@@ -62,13 +63,7 @@ export default function Navbar() {
 
     return (
         <Box bg='white' borderBottom='1px' borderColor='blackAlpha.300'>
-            <Flex
-                py='3'
-                alignItems={'center'}
-                justifyContent={'space-between'}
-                width={['98%', '90%', '80%']}
-                mx='auto'
-            >
+            <HStack py='3' width={['98%', '90%', '80%']} mx='auto'>
                 <IconButton
                     colorScheme='gray'
                     size={'sm'}
@@ -82,6 +77,7 @@ export default function Navbar() {
                 <Link href='/'>
                     <Logo width='130' />
                 </Link>
+                <Spacer />
                 <HStack as={'nav'} spacing={4} display={{ base: 'none', md: 'flex' }}>
                     {links.map((link) => (
                         <NavLink key={link.name} href={link.href}>
@@ -89,6 +85,7 @@ export default function Navbar() {
                         </NavLink>
                     ))}
                 </HStack>
+                <Spacer />
                 <Flex alignItems={'center'}>
                     {!isLoading ? (
                         <Menu>
@@ -125,7 +122,7 @@ export default function Navbar() {
                         <Spinner size='xs' />
                     )}
                 </Flex>
-            </Flex>
+            </HStack>
 
             {isOpen ? (
                 <Box pb={4} display={{ md: 'none' }} px='6'>

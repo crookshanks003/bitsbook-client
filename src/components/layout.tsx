@@ -6,7 +6,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     return (
         <>
             <Navbar />
-            <Box width={['98%', '90%', '80%']} mx='auto'>
+            <Box width={['96%', '90%', '80%']} mx='auto'>
                 {children}
             </Box>
         </>

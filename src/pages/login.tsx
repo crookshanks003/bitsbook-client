@@ -9,6 +9,7 @@ import {
     Input,
     Link,
     Spacer,
+    Spinner,
     Text,
 } from '@chakra-ui/react';
 import { NextPageWithLayout } from './_app';
@@ -21,7 +22,9 @@ import { GetServerSideProps } from 'next';
 const Login: NextPageWithLayout = () => {
     const router = useRouter();
     const [email, setEmail] = useState('');
+    const [buttonLoading, setButtonLoading] = useState(false);
     const onSubmit = () => {
+        setButtonLoading(true);
         if (!email) return;
         login(email)
             .then((res) => {
@@ -32,6 +35,7 @@ const Login: NextPageWithLayout = () => {
             .catch((err) => {
                 console.log(err);
             });
+        setButtonLoading(false);
     };
 
     return (
@@ -71,7 +75,7 @@ const Login: NextPageWithLayout = () => {
                     _hover={{ color: 'white', bgColor: 'pink.600' }}
                     onClick={onSubmit}
                 >
-                    Log In
+                    {buttonLoading ? <Spinner /> : 'Log In'}
                 </Button>
                 <Link>
                     <Text

@@ -1,16 +1,12 @@
-import { Inter, Playfair_Display } from 'next/font/google';
+import { Inter, Merriweather } from 'next/font/google';
 import { ComponentStyleConfig, extendTheme, withDefaultColorScheme } from '@chakra-ui/react';
 
 const inter = Inter({ subsets: ['latin'] });
-const playfairDisplay = Playfair_Display({ subsets: ['latin'] });
+const mw = Merriweather({ subsets: ['latin'], weight: ['400', '700'] });
 
 const DefaultButton: ComponentStyleConfig = {
-    baseStyle: {
-        rounded: 'full',
-        bgColor: 'pink.500',
-    },
     variants: {
-        outline: {
+        dafaultOutline: {
             borderColor: 'pink.500',
             color: 'pink.500',
             _hover: {
@@ -18,11 +14,18 @@ const DefaultButton: ComponentStyleConfig = {
                 color: 'white',
             },
         },
-        solid: {
+        default: {
+            rounded: 'full',
+            bgColor: 'pink.500',
+            color: 'white',
+            fontWeight: '600',
             _hover: {
                 bgColor: 'pink.400',
             },
         },
+    },
+    defaultProps: {
+        variant: 'default',
     },
 };
 
@@ -36,7 +39,7 @@ export const theme = extendTheme(
             },
         },
         fonts: {
-            heading: playfairDisplay.style.fontFamily,
+            heading: mw.style.fontFamily,
             body: `${inter.style.fontFamily}, sans-serif`,
         },
         components: {
