@@ -1,6 +1,6 @@
 import Layout from '@/components/layout';
 import { createUser, getAllUsers } from '@/services/user';
-import { ApiError, CreateUserDto, Role, User } from '@/types';
+import { CreateUserDto, Role, User } from '@/types';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import { NextPageWithLayout } from '../_app';
@@ -30,17 +30,6 @@ import {
     Stack,
     Text,
     useDisclosure,
-    Modal,
-    ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalCloseButton,
-    ModalBody,
-    ModalFooter,
-    Select,
-    FormControl,
-    FormErrorMessage,
-    CreateToastFnReturn,
     ButtonGroup,
     Tooltip,
 } from '@chakra-ui/react';
@@ -50,7 +39,9 @@ import { TiEdit } from 'react-icons/ti';
 import { BiSearch } from 'react-icons/bi';
 import { deleteUser } from '@/services/admin';
 import { Dispatch, SetStateAction, useState } from 'react';
-import { Field, FieldProps, Form, Formik, FormikHelpers } from 'formik';
+import { AddUserModal } from '@/components/admin/addUserModal';
+import { dehydrate, QueryClient, useQuery } from 'react-query';
+import { FormikHelpers } from 'formik';
 
 const SortBy = ({
     sortBy,
@@ -82,7 +73,7 @@ const SortBy = ({
                 </Button>
             </PopoverTrigger>
 
-            <PopoverContent maxW='lg'>
+            <PopoverContent style={{ margin: 0 }}>
                 <PopoverBody>
                     <RadioGroup value={sortBy} onChange={(newOption) => setSortBy(newOption)}>
                         <Stack direction='column'>
@@ -99,16 +90,61 @@ const SortBy = ({
     );
 };
 
-const AddUserModal = ({
-    isOpen,
-    onClose,
-    toast,
-}: {
-    isOpen: boolean;
-    onClose: () => void;
-    toast: CreateToastFnReturn;
-}) => {
-    const addUser = (values: CreateUserDto, actions: FormikHelpers<CreateUserDto>) => {
+const Users: NextPageWithLayout = () => {
+    const toast = useToast();
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [_, setSearchString] = useState('');
+    const [sortBy, setSortBy] = useState('createdAt');
+    const { isOpen, onOpen, onClose } = useDisclosure();
+
+    const { data, error, refetch } = useQuery('allUsers', () => getAllUsers(), {
+        staleTime: 30 * 1000,
+    });
+    if (error || !data) {
+        return <Text>Something went wrong</Text>;
+    }
+
+    const compareFn = (a: User, b: User) => {
+        switch (sortBy) {
+            case 'email':
+            case 'name':
+            case 'role':
+                return a[sortBy].toLowerCase().localeCompare(b[sortBy].toLowerCase());
+            default:
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+    };
+
+    const onDeleteUser = (id: string) => {
+        setIsDeleting(true);
+        deleteUser(id)
+            .then(() => {
+                toast({
+                    title: 'User Deleted',
+                    status: 'success',
+                    duration: 5000,
+                    isClosable: true,
+                });
+                refetch().catch();
+            })
+            .catch((err) => {
+                if (axios.isAxiosError(err)) {
+                    toast({
+                        title: err.message,
+                        description: err.response?.data.message || 'Could not delete user',
+                        status: 'error',
+                        duration: 5000,
+                        isClosable: true,
+                    });
+                }
+            });
+        setIsDeleting(false);
+    };
+
+    const handleModalFormSubmit = (
+        values: CreateUserDto,
+        actions: FormikHelpers<CreateUserDto>,
+    ) => {
         createUser(values)
             .then(() => {
                 toast({
@@ -117,7 +153,9 @@ const AddUserModal = ({
                     duration: 5000,
                     isClosable: true,
                 });
+
                 onClose();
+                refetch().catch();
             })
             .catch((err) => {
                 if (axios.isAxiosError(err)) {
@@ -132,169 +170,6 @@ const AddUserModal = ({
             });
 
         actions.setSubmitting(false);
-    };
-    return (
-        <Modal isOpen={isOpen} onClose={onClose} size='lg'>
-            <Formik
-                initialValues={{ email: '', name: '', password: '', role: 'user' }}
-                onSubmit={addUser}
-            >
-                {(props) => (
-                    <Form>
-                        <ModalOverlay />
-                        <ModalContent>
-                            <ModalHeader>Add User</ModalHeader>
-                            <ModalCloseButton />
-                            <ModalBody pb='6'>
-                                <Field
-                                    name='name'
-                                    validate={(value: string) => {
-                                        if (!value) return 'Name is required';
-                                    }}
-                                >
-                                    {({ form, field }: FieldProps) => (
-                                        <HStack
-                                            as={FormControl}
-                                            mt={4}
-                                            justifyContent='space-between'
-                                            isInvalid={form.errors.name && form.touched.name}
-                                        >
-                                            <Text flexBasis='25%'>Name</Text>
-                                            <Box flexBasis='75%'>
-                                                <Input placeholder='Name' {...field} />
-                                                <FormErrorMessage>
-                                                    {form.errors.name as string}
-                                                </FormErrorMessage>
-                                            </Box>
-                                        </HStack>
-                                    )}
-                                </Field>
-                                <Field
-                                    name='email'
-                                    validate={(value: string) => {
-                                        if (!value) return 'Email is required';
-                                    }}
-                                >
-                                    {({ form, field }: FieldProps) => (
-                                        <HStack
-                                            mt={4}
-                                            justifyContent='space-between'
-                                            as={FormControl}
-                                            isInvalid={form.errors.email && form.touched.email}
-                                        >
-                                            <Text flexBasis='25%'>Email</Text>
-                                            <Box flexBasis='75%'>
-                                                <Input
-                                                    {...field}
-                                                    placeholder='Email'
-                                                    type='email'
-                                                />
-                                                <FormErrorMessage>
-                                                    {form.errors.email as string}
-                                                </FormErrorMessage>
-                                            </Box>
-                                        </HStack>
-                                    )}
-                                </Field>
-
-                                <Field
-                                    name='password'
-                                    validate={(value: string) => {
-                                        if (!value) return 'Password is required';
-                                        if (value.length < 6)
-                                            return 'Password must be 6 characters long';
-                                    }}
-                                >
-                                    {({ form, field }: FieldProps) => (
-                                        <HStack
-                                            mt={4}
-                                            justifyContent='space-between'
-                                            as={FormControl}
-                                            isInvalid={
-                                                form.errors.password && form.touched.password
-                                            }
-                                        >
-                                            <Text flexBasis='25%'>Password</Text>
-                                            <Box flexBasis='75%'>
-                                                <Input placeholder='Password' {...field} />
-                                                <FormErrorMessage>
-                                                    {form.errors.password as string}
-                                                </FormErrorMessage>
-                                            </Box>
-                                        </HStack>
-                                    )}
-                                </Field>
-                                <Field name='role'>
-                                    {({ form, field }: FieldProps) => (
-                                        <HStack
-                                            mt={4}
-                                            justifyContent='space-between'
-                                            as={FormControl}
-                                            isInvalid={form.errors.role && form.touched.role}
-                                        >
-                                            <Text flexBasis='25%'>Role</Text>
-                                            <Box flexBasis='75%'>
-                                                <Select {...field}>
-                                                    <option value='user'>User</option>
-                                                    <option value='admin'>Admin</option>
-                                                </Select>
-                                                <FormErrorMessage>
-                                                    {form.errors.role as string}
-                                                </FormErrorMessage>
-                                            </Box>
-                                        </HStack>
-                                    )}
-                                </Field>
-                            </ModalBody>
-                            <ModalFooter>
-                                <Button
-                                    colorScheme='green'
-                                    variant='solid'
-                                    isLoading={props.isSubmitting}
-                                    width='full'
-                                    type='submit'
-                                >
-                                    Add
-                                </Button>
-                            </ModalFooter>
-                        </ModalContent>
-                    </Form>
-                )}
-            </Formik>
-        </Modal>
-    );
-};
-
-const Users: NextPageWithLayout<{ users: User[] }> = ({ users }) => {
-    const toast = useToast();
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [_, setSearchString] = useState('');
-    const [sortBy, setSortBy] = useState('createdAt');
-    const { isOpen, onOpen, onClose } = useDisclosure();
-
-    const onDeleteUser = (id: string) => {
-        setIsDeleting(true);
-        deleteUser(id)
-            .then(() => {
-                toast({
-                    title: 'User Deleted',
-                    status: 'success',
-                    duration: 5000,
-                    isClosable: true,
-                });
-            })
-            .catch((err) => {
-                if (axios.isAxiosError(err)) {
-                    toast({
-                        title: err.message,
-                        description: err.response?.data.message || 'Could not delete user',
-                        status: 'error',
-                        duration: 5000,
-                        isClosable: true,
-                    });
-                }
-            });
-        setIsDeleting(false);
     };
 
     return (
@@ -342,7 +217,7 @@ const Users: NextPageWithLayout<{ users: User[] }> = ({ users }) => {
                             </Tr>
                         </Thead>
                         <Tbody>
-                            {users.map((user, i) => (
+                            {data.payload?.sort(compareFn).map((user, i) => (
                                 <Tr key={i}>
                                     <Td>{user.name}</Td>
                                     <Td>{user.email}</Td>
@@ -398,7 +273,7 @@ const Users: NextPageWithLayout<{ users: User[] }> = ({ users }) => {
                     </Table>
                 </TableContainer>
             </Box>
-            <AddUserModal isOpen={isOpen} onClose={onClose} toast={toast} />
+            <AddUserModal isOpen={isOpen} onClose={onClose} handleSubmit={handleModalFormSubmit} />
         </>
     );
 };
@@ -427,31 +302,19 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         };
     }
 
-    try {
-        const { data } = await getAllUsers(user);
-        return {
-            props: {
-                users: data.payload,
-            },
-        };
-    } catch (err: unknown) {
-        if (axios.isAxiosError<ApiError>(err)) {
-            console.log(err.response);
-        }
-        return {
-            props: {
-                users: [
-                    {
-                        _id: '123',
-                        name: 'John Doe',
-                        email: 'john@gmail.com',
-                        role: 'user',
-                        createdAt: '2021-01-01T00:00:00.000Z',
-                    },
-                ],
-            },
-        };
-    }
+    const queryClient = new QueryClient();
+    await queryClient.prefetchQuery(
+        'allUsers',
+        () => {
+            return getAllUsers(user);
+        },
+        { staleTime: 30 * 1000 },
+    );
+    return {
+        props: {
+            dehydratedState: dehydrate(queryClient),
+        },
+    };
 };
 
 export default Users;

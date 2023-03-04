@@ -7,10 +7,14 @@ export function getRole(): Promise<AxiosResponse<string>> {
     return client.get('/auth/get-role');
 }
 
-export function getAllUsers(token: string): Promise<AxiosResponse<ApiResponse<User[]>>> {
-    return client.get('/user/all', {
-        headers: { Cookie: `token=${token}` },
-    });
+export async function getAllUsers(token?: string): Promise<ApiResponse<User[]>> {
+    const config = token
+        ? {
+              headers: { Cookie: `token=${token}` },
+          }
+        : undefined;
+    const { data } = await client.get<ApiResponse<User[]>>('/user/all', config);
+    return data;
 }
 
 export function createUser(user: CreateUserDto): Promise<AxiosResponse<ApiResponse<User>>> {

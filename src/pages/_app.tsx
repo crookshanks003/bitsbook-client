@@ -4,7 +4,7 @@ import { theme } from '../theme';
 import Head from 'next/head';
 import { ReactElement, ReactNode, useState } from 'react';
 import { NextPage } from 'next';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { Hydrate, QueryClient, QueryClientProvider } from 'react-query';
 
 export type NextPageWithLayout<P = Record<string, any>, IP = P> = NextPage<P, IP> & {
     getLayout?: (page: ReactElement) => ReactNode;
@@ -29,7 +29,9 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
             </Head>
             <ChakraProvider theme={theme}>
                 <QueryClientProvider client={queryClient}>
-                    {getLayout(<Component {...pageProps} />)}
+                    <Hydrate state={pageProps.dehydratedState}>
+                        {getLayout(<Component {...pageProps} />)}
+                    </Hydrate>
                 </QueryClientProvider>
             </ChakraProvider>
         </>
