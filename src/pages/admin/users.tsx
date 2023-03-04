@@ -1,6 +1,6 @@
 import Layout from '@/components/layout';
-import { getAllUsers } from '@/services/user';
-import { ApiError, Role, User } from '@/types';
+import { createUser, getAllUsers } from '@/services/user';
+import { ApiError, CreateUserDto, Role, User } from '@/types';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import { NextPageWithLayout } from '../_app';
@@ -15,7 +15,6 @@ import {
     IconButton,
     Tag,
     useToast,
-    Spinner,
     InputGroup,
     InputLeftElement,
     Input,
@@ -39,12 +38,19 @@ import {
     ModalBody,
     ModalFooter,
     Select,
+    FormControl,
+    FormErrorMessage,
+    CreateToastFnReturn,
+    ButtonGroup,
+    Tooltip,
 } from '@chakra-ui/react';
 import { RiArrowDropDownLine, RiDeleteBin6Line } from 'react-icons/ri';
 import { AiOutlinePlus } from 'react-icons/ai';
+import { TiEdit } from 'react-icons/ti';
 import { BiSearch } from 'react-icons/bi';
 import { deleteUser } from '@/services/admin';
 import { Dispatch, SetStateAction, useState } from 'react';
+import { Field, FieldProps, Form, Formik, FormikHelpers } from 'formik';
 
 const SortBy = ({
     sortBy,
@@ -80,10 +86,11 @@ const SortBy = ({
                 <PopoverBody>
                     <RadioGroup value={sortBy} onChange={(newOption) => setSortBy(newOption)}>
                         <Stack direction='column'>
-                            <Radio value='name'>Name</Radio>
-                            <Radio value='email'>Email</Radio>
-                            <Radio value='createdAt'>Created At</Radio>
-                            <Radio value='role'>Role</Radio>
+                            {Object.keys(sortedByValues).map((k, i) => (
+                                <Radio value={k} key={i}>
+                                    {sortedByValues[k]}
+                                </Radio>
+                            ))}
                         </Stack>
                     </RadioGroup>
                 </PopoverBody>
@@ -92,48 +99,169 @@ const SortBy = ({
     );
 };
 
-const AddUserModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-    const addUser = () => {
-        console.log('Add User');
+const AddUserModal = ({
+    isOpen,
+    onClose,
+    toast,
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    toast: CreateToastFnReturn;
+}) => {
+    const addUser = (values: CreateUserDto, actions: FormikHelpers<CreateUserDto>) => {
+        createUser(values)
+            .then(() => {
+                toast({
+                    title: 'User Created',
+                    status: 'success',
+                    duration: 5000,
+                    isClosable: true,
+                });
+                onClose();
+            })
+            .catch((err) => {
+                if (axios.isAxiosError(err)) {
+                    toast({
+                        title: err.status !== 500 ? 'Failed to create user' : err.message,
+                        description: err.response?.data.message || 'Failed to create user',
+                        status: 'error',
+                        duration: 5000,
+                        isClosable: true,
+                    });
+                }
+            });
+
+        actions.setSubmitting(false);
     };
-
     return (
-        <>
-            <Modal isOpen={isOpen} onClose={onClose} size='lg'>
-                <ModalOverlay />
-                <ModalContent>
-                    <ModalHeader>Add User</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody pb='6'>
-                        <HStack mt={4} justifyContent='space-between'>
-                            <Text flexBasis='25%'>Name</Text>
-                            <Input flexBasis='75%' placeholder='Name' />
-                        </HStack>
-                        <HStack mt={4} justifyContent='space-between'>
-                            <Text flexBasis='25%'>Email</Text>
-                            <Input flexBasis='75%' placeholder='Email' type='email' />
-                        </HStack>
+        <Modal isOpen={isOpen} onClose={onClose} size='lg'>
+            <Formik
+                initialValues={{ email: '', name: '', password: '', role: 'user' }}
+                onSubmit={addUser}
+            >
+                {(props) => (
+                    <Form>
+                        <ModalOverlay />
+                        <ModalContent>
+                            <ModalHeader>Add User</ModalHeader>
+                            <ModalCloseButton />
+                            <ModalBody pb='6'>
+                                <Field
+                                    name='name'
+                                    validate={(value: string) => {
+                                        if (!value) return 'Name is required';
+                                    }}
+                                >
+                                    {({ form, field }: FieldProps) => (
+                                        <HStack
+                                            as={FormControl}
+                                            mt={4}
+                                            justifyContent='space-between'
+                                            isInvalid={form.errors.name && form.touched.name}
+                                        >
+                                            <Text flexBasis='25%'>Name</Text>
+                                            <Box flexBasis='75%'>
+                                                <Input placeholder='Name' {...field} />
+                                                <FormErrorMessage>
+                                                    {form.errors.name as string}
+                                                </FormErrorMessage>
+                                            </Box>
+                                        </HStack>
+                                    )}
+                                </Field>
+                                <Field
+                                    name='email'
+                                    validate={(value: string) => {
+                                        if (!value) return 'Email is required';
+                                    }}
+                                >
+                                    {({ form, field }: FieldProps) => (
+                                        <HStack
+                                            mt={4}
+                                            justifyContent='space-between'
+                                            as={FormControl}
+                                            isInvalid={form.errors.email && form.touched.email}
+                                        >
+                                            <Text flexBasis='25%'>Email</Text>
+                                            <Box flexBasis='75%'>
+                                                <Input
+                                                    {...field}
+                                                    placeholder='Email'
+                                                    type='email'
+                                                />
+                                                <FormErrorMessage>
+                                                    {form.errors.email as string}
+                                                </FormErrorMessage>
+                                            </Box>
+                                        </HStack>
+                                    )}
+                                </Field>
 
-                        <HStack mt={4} justifyContent='space-between'>
-                            <Text flexBasis='25%'>Password</Text>
-                            <Input w='sm' placeholder='Password' flexBasis='75%' />
-                        </HStack>
-                        <HStack mt={4} justifyContent='space-between'>
-                            <Text flexBasis='25%'>Role</Text>
-                            <Select flexBasis='75%'>
-                                <option value='user'>User</option>
-                                <option value='admin'>Amdin</option>
-                            </Select>
-                        </HStack>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button colorScheme='green' variant='solid' width='full' onClick={addUser}>
-                            Add
-                        </Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
-        </>
+                                <Field
+                                    name='password'
+                                    validate={(value: string) => {
+                                        if (!value) return 'Password is required';
+                                        if (value.length < 6)
+                                            return 'Password must be 6 characters long';
+                                    }}
+                                >
+                                    {({ form, field }: FieldProps) => (
+                                        <HStack
+                                            mt={4}
+                                            justifyContent='space-between'
+                                            as={FormControl}
+                                            isInvalid={
+                                                form.errors.password && form.touched.password
+                                            }
+                                        >
+                                            <Text flexBasis='25%'>Password</Text>
+                                            <Box flexBasis='75%'>
+                                                <Input placeholder='Password' {...field} />
+                                                <FormErrorMessage>
+                                                    {form.errors.password as string}
+                                                </FormErrorMessage>
+                                            </Box>
+                                        </HStack>
+                                    )}
+                                </Field>
+                                <Field name='role'>
+                                    {({ form, field }: FieldProps) => (
+                                        <HStack
+                                            mt={4}
+                                            justifyContent='space-between'
+                                            as={FormControl}
+                                            isInvalid={form.errors.role && form.touched.role}
+                                        >
+                                            <Text flexBasis='25%'>Role</Text>
+                                            <Box flexBasis='75%'>
+                                                <Select {...field}>
+                                                    <option value='user'>User</option>
+                                                    <option value='admin'>Admin</option>
+                                                </Select>
+                                                <FormErrorMessage>
+                                                    {form.errors.role as string}
+                                                </FormErrorMessage>
+                                            </Box>
+                                        </HStack>
+                                    )}
+                                </Field>
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button
+                                    colorScheme='green'
+                                    variant='solid'
+                                    isLoading={props.isSubmitting}
+                                    width='full'
+                                    type='submit'
+                                >
+                                    Add
+                                </Button>
+                            </ModalFooter>
+                        </ModalContent>
+                    </Form>
+                )}
+            </Formik>
+        </Modal>
     );
 };
 
@@ -141,7 +269,7 @@ const Users: NextPageWithLayout<{ users: User[] }> = ({ users }) => {
     const toast = useToast();
     const [isDeleting, setIsDeleting] = useState(false);
     const [_, setSearchString] = useState('');
-    const [sortBy, setSortBy] = useState('name');
+    const [sortBy, setSortBy] = useState('createdAt');
     const { isOpen, onOpen, onClose } = useDisclosure();
 
     const onDeleteUser = (id: string) => {
@@ -220,9 +348,7 @@ const Users: NextPageWithLayout<{ users: User[] }> = ({ users }) => {
                                     <Td>{user.email}</Td>
                                     <Td>
                                         <Tag
-                                            colorScheme={
-                                                user.role === Role.USER ? 'green' : 'yellow'
-                                            }
+                                            colorScheme={user.role === Role.USER ? 'green' : 'pink'}
                                         >
                                             {user.role}
                                         </Tag>
@@ -235,17 +361,36 @@ const Users: NextPageWithLayout<{ users: User[] }> = ({ users }) => {
                                         })}
                                     </Td>
                                     <Td isNumeric>
-                                        <IconButton
-                                            aria-label='Delete User'
-                                            variant='ghost'
-                                            color='gray.500'
-                                            _hover={{
-                                                color: 'red.600',
-                                            }}
-                                            fontSize='xl'
-                                            icon={isDeleting ? <Spinner /> : <RiDeleteBin6Line />}
-                                            onClick={() => onDeleteUser(user._id)}
-                                        />
+                                        <ButtonGroup>
+                                            <Tooltip hasArrow label='Edit User'>
+                                                <IconButton
+                                                    aria-label='Edit User'
+                                                    variant='ghost'
+                                                    color='gray.500'
+                                                    _hover={{
+                                                        color: 'blue.500',
+                                                    }}
+                                                    fontSize='xl'
+                                                    isLoading={isDeleting}
+                                                    icon={<TiEdit />}
+                                                    onClick={() => console.log('edit')}
+                                                />
+                                            </Tooltip>
+                                            <Tooltip hasArrow label='Delete User'>
+                                                <IconButton
+                                                    aria-label='Delete User'
+                                                    variant='ghost'
+                                                    color='gray.500'
+                                                    _hover={{
+                                                        color: 'red.600',
+                                                    }}
+                                                    fontSize='xl'
+                                                    isLoading={isDeleting}
+                                                    icon={<RiDeleteBin6Line />}
+                                                    onClick={() => onDeleteUser(user._id)}
+                                                />
+                                            </Tooltip>
+                                        </ButtonGroup>
                                     </Td>
                                 </Tr>
                             ))}
@@ -253,7 +398,7 @@ const Users: NextPageWithLayout<{ users: User[] }> = ({ users }) => {
                     </Table>
                 </TableContainer>
             </Box>
-            <AddUserModal isOpen={isOpen} onClose={onClose} />
+            <AddUserModal isOpen={isOpen} onClose={onClose} toast={toast} />
         </>
     );
 };

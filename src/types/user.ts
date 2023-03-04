@@ -15,3 +15,10 @@ export interface User {
     __v: number;
     _id: string;
 }
+
+export interface CreateUserDto {
+    email: string;
+    name: string;
+    password: string;
+    role: string;
+}
