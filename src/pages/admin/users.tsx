@@ -1,6 +1,7 @@
 import Layout from '@/components/layout';
-import { createUser, getAllUsers } from '@/services/user';
-import { CreateUserDto, Role, User } from '@/types';
+import { getAllUsers } from '@/services/user';
+import { createUser, editUserRole } from '@/services/admin';
+import { CreateUserDto, User } from '@/types';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import { NextPageWithLayout } from '../_app';
@@ -12,8 +13,6 @@ import {
     Td,
     TableContainer,
     Box,
-    IconButton,
-    Tag,
     useToast,
     InputGroup,
     InputLeftElement,
@@ -21,78 +20,20 @@ import {
     HStack,
     Spacer,
     Button,
-    Popover,
-    PopoverTrigger,
-    PopoverContent,
-    PopoverBody,
-    Radio,
-    RadioGroup,
-    Stack,
     Text,
     useDisclosure,
-    ButtonGroup,
-    Tooltip,
 } from '@chakra-ui/react';
-import { RiArrowDropDownLine, RiDeleteBin6Line } from 'react-icons/ri';
 import { AiOutlinePlus } from 'react-icons/ai';
-import { TiEdit } from 'react-icons/ti';
 import { BiSearch } from 'react-icons/bi';
 import { deleteUser } from '@/services/admin';
-import { Dispatch, SetStateAction, useState } from 'react';
+import { useState } from 'react';
 import { AddUserModal } from '@/components/admin/addUserModal';
 import { dehydrate, QueryClient, useQuery } from 'react-query';
 import { FormikHelpers } from 'formik';
-
-const SortBy = ({
-    sortBy,
-    setSortBy,
-}: {
-    sortBy: string;
-    setSortBy: Dispatch<SetStateAction<string>>;
-}) => {
-    const sortedByValues: Record<string, string> = {
-        name: 'Name',
-        createdAt: 'Created At',
-        email: 'Email',
-        role: 'Role',
-    };
-    return (
-        <Popover isLazy lazyBehavior='keepMounted' placement='bottom-start'>
-            <PopoverTrigger>
-                <Button
-                    variant='outline'
-                    colorScheme='gray'
-                    rightIcon=<RiArrowDropDownLine />
-                    color='gray.700'
-                    fontWeight='600'
-                >
-                    <Text as='span' color='gray.500' me='1' fontWeight='400'>
-                        Sort By :
-                    </Text>
-                    {sortedByValues[sortBy]}
-                </Button>
-            </PopoverTrigger>
-
-            <PopoverContent style={{ margin: 0 }}>
-                <PopoverBody>
-                    <RadioGroup value={sortBy} onChange={(newOption) => setSortBy(newOption)}>
-                        <Stack direction='column'>
-                            {Object.keys(sortedByValues).map((k, i) => (
-                                <Radio value={k} key={i}>
-                                    {sortedByValues[k]}
-                                </Radio>
-                            ))}
-                        </Stack>
-                    </RadioGroup>
-                </PopoverBody>
-            </PopoverContent>
-        </Popover>
-    );
-};
+import { DeleteButtonWithAlert, RoleTagWithEditModal, SortByInput } from '@/components/admin';
 
 const Users: NextPageWithLayout = () => {
     const toast = useToast();
-    const [isDeleting, setIsDeleting] = useState(false);
     const [_, setSearchString] = useState('');
     const [sortBy, setSortBy] = useState('createdAt');
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -116,7 +57,6 @@ const Users: NextPageWithLayout = () => {
     };
 
     const onDeleteUser = (id: string) => {
-        setIsDeleting(true);
         deleteUser(id)
             .then(() => {
                 toast({
@@ -138,7 +78,27 @@ const Users: NextPageWithLayout = () => {
                     });
                 }
             });
-        setIsDeleting(false);
+    };
+
+    const onEditRole = (userId: string, role: string) => {
+        editUserRole({ userId, role })
+            .then(() => {
+                toast({
+                    title: 'Updated Role',
+                    status: 'success',
+                    isClosable: true,
+                    duration: 5000,
+                });
+                refetch().catch((err) => console.log(err));
+            })
+            .catch(() => {
+                toast({
+                    title: 'Failed to update role',
+                    status: 'error',
+                    isClosable: true,
+                    duration: 5000,
+                });
+            });
     };
 
     const handleModalFormSubmit = (
@@ -154,8 +114,8 @@ const Users: NextPageWithLayout = () => {
                     isClosable: true,
                 });
 
-                onClose();
                 refetch().catch();
+                onClose();
             })
             .catch((err) => {
                 if (axios.isAxiosError(err)) {
@@ -185,11 +145,10 @@ const Users: NextPageWithLayout = () => {
                             onChange={(e) => setSearchString(e.target.value)}
                         />
                     </InputGroup>
-                    <SortBy sortBy={sortBy} setSortBy={setSortBy} />
+                    <SortByInput sortBy={sortBy} setSortBy={setSortBy} />
 
                     <Spacer />
                     <Button
-                        colorScheme='green'
                         variant='solid'
                         leftIcon={<AiOutlinePlus />}
                         fontSize='md'
@@ -222,11 +181,11 @@ const Users: NextPageWithLayout = () => {
                                     <Td>{user.name}</Td>
                                     <Td>{user.email}</Td>
                                     <Td>
-                                        <Tag
-                                            colorScheme={user.role === Role.USER ? 'green' : 'pink'}
-                                        >
-                                            {user.role}
-                                        </Tag>
+                                        <RoleTagWithEditModal
+                                            user={user}
+                                            onEditRole={onEditRole}
+                                            key={i}
+                                        />
                                     </Td>
                                     <Td>
                                         {new Date(user.createdAt).toLocaleDateString('en-IN', {
@@ -236,36 +195,9 @@ const Users: NextPageWithLayout = () => {
                                         })}
                                     </Td>
                                     <Td isNumeric>
-                                        <ButtonGroup>
-                                            <Tooltip hasArrow label='Edit User'>
-                                                <IconButton
-                                                    aria-label='Edit User'
-                                                    variant='ghost'
-                                                    color='gray.500'
-                                                    _hover={{
-                                                        color: 'blue.500',
-                                                    }}
-                                                    fontSize='xl'
-                                                    isLoading={isDeleting}
-                                                    icon={<TiEdit />}
-                                                    onClick={() => console.log('edit')}
-                                                />
-                                            </Tooltip>
-                                            <Tooltip hasArrow label='Delete User'>
-                                                <IconButton
-                                                    aria-label='Delete User'
-                                                    variant='ghost'
-                                                    color='gray.500'
-                                                    _hover={{
-                                                        color: 'red.600',
-                                                    }}
-                                                    fontSize='xl'
-                                                    isLoading={isDeleting}
-                                                    icon={<RiDeleteBin6Line />}
-                                                    onClick={() => onDeleteUser(user._id)}
-                                                />
-                                            </Tooltip>
-                                        </ButtonGroup>
+                                        <DeleteButtonWithAlert
+                                            onDeleteUser={() => onDeleteUser(user._id)}
+                                        />
                                     </Td>
                                 </Tr>
                             ))}

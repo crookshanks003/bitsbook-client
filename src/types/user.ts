@@ -1,7 +1,7 @@
 import { UserClub } from './clubs';
 
 export enum Role {
-    ADIMIN = 'admin',
+    ADMIN = 'admin',
     USER = 'user',
 }
 
@@ -21,4 +21,9 @@ export interface CreateUserDto {
     name: string;
     password: string;
     role: string;
+}
+
+export interface UpdateUserRoleDto {
+    role: string;
+    userId: string;
 }

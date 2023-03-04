@@ -1,4 +1,4 @@
-import { ApiResponse, CreateUserDto, User } from '@/types';
+import { ApiResponse, User } from '@/types';
 import axios, { AxiosResponse } from 'axios';
 
 const client = axios.create({ baseURL: 'http://localhost:5000', withCredentials: true });
@@ -15,8 +15,4 @@ export async function getAllUsers(token?: string): Promise<ApiResponse<User[]>> 
         : undefined;
     const { data } = await client.get<ApiResponse<User[]>>('/user/all', config);
     return data;
-}
-
-export function createUser(user: CreateUserDto): Promise<AxiosResponse<ApiResponse<User>>> {
-    return client.post('/admin/create-user', user);
 }

@@ -29,7 +29,6 @@ const Login: NextPageWithLayout = () => {
         login(email)
             .then((res) => {
                 if (res.data.error) return;
-                console.log(res);
                 router.push('/');
             })
             .catch((err) => {

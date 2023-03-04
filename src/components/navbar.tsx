@@ -66,6 +66,7 @@ export default function Navbar() {
             <HStack py='3' width={['98%', '90%', '80%']} mx='auto'>
                 <IconButton
                     colorScheme='gray'
+                    variant='solid'
                     size={'sm'}
                     p='auto'
                     icon={isOpen ? <MdOutlineClose /> : <MdMenu />}
