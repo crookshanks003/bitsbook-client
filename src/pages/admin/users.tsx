@@ -145,7 +145,16 @@ const Users: NextPageWithLayout = () => {
                             onChange={(e) => setSearchString(e.target.value)}
                         />
                     </InputGroup>
-                    <SortByInput sortBy={sortBy} setSortBy={setSortBy} />
+                    <SortByInput
+                        sortBy={sortBy}
+                        setSortBy={setSortBy}
+                        sortByKeys={{
+                            name: 'Name',
+                            createdAt: 'Created At',
+                            email: 'Email',
+                            role: 'Role',
+                        }}
+                    />
 
                     <Spacer />
                     <Button
@@ -196,7 +205,8 @@ const Users: NextPageWithLayout = () => {
                                     </Td>
                                     <Td isNumeric>
                                         <DeleteButtonWithAlert
-                                            onDeleteUser={() => onDeleteUser(user._id)}
+                                            onDelete={() => onDeleteUser(user._id)}
+                                            title='Delete User'
                                         />
                                     </Td>
                                 </Tr>

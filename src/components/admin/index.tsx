@@ -41,16 +41,12 @@ import { TiEdit } from 'react-icons/ti';
 export const SortByInput = ({
     sortBy,
     setSortBy,
+    sortByKeys,
 }: {
     sortBy: string;
     setSortBy: Dispatch<SetStateAction<string>>;
+    sortByKeys: Record<string, string>;
 }) => {
-    const sortedByValues: Record<string, string> = {
-        name: 'Name',
-        createdAt: 'Created At',
-        email: 'Email',
-        role: 'Role',
-    };
     return (
         <Popover isLazy lazyBehavior='keepMounted' placement='bottom-start'>
             <PopoverTrigger>
@@ -64,7 +60,7 @@ export const SortByInput = ({
                     <Text as='span' color='gray.500' me='1' fontWeight='400'>
                         Sort By :
                     </Text>
-                    {sortedByValues[sortBy]}
+                    {sortByKeys[sortBy]}
                 </Button>
             </PopoverTrigger>
 
@@ -72,9 +68,9 @@ export const SortByInput = ({
                 <PopoverBody>
                     <RadioGroup value={sortBy} onChange={(newOption) => setSortBy(newOption)}>
                         <Stack direction='column'>
-                            {Object.keys(sortedByValues).map((k, i) => (
+                            {Object.keys(sortByKeys).map((k, i) => (
                                 <Radio value={k} key={i}>
-                                    {sortedByValues[k]}
+                                    {sortByKeys[k]}
                                 </Radio>
                             ))}
                         </Stack>
@@ -86,9 +82,11 @@ export const SortByInput = ({
 };
 
 export const DeleteButtonWithAlert = ({
-    onDeleteUser,
+    onDelete,
+    title,
 }: {
-    onDeleteUser: MouseEventHandler<HTMLButtonElement>;
+    onDelete: MouseEventHandler<HTMLButtonElement>;
+    title: string;
 }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [isDeleting, setIsDeleting] = useState(false);
@@ -113,7 +111,7 @@ export const DeleteButtonWithAlert = ({
                 <AlertDialogOverlay>
                     <AlertDialogContent>
                         <AlertDialogHeader fontSize='lg' fontWeight='bold'>
-                            Delete User
+                            {title}
                         </AlertDialogHeader>
 
                         <AlertDialogBody>
@@ -133,7 +131,7 @@ export const DeleteButtonWithAlert = ({
                                 colorScheme='red'
                                 onClick={(e) => {
                                     setIsDeleting(true);
-                                    onDeleteUser(e);
+                                    onDelete(e);
                                     setIsDeleting(false);
                                     onClose();
                                 }}
