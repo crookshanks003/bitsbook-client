@@ -38,14 +38,14 @@ import { Dispatch, MouseEventHandler, SetStateAction, useRef, useState } from 'r
 import { RiArrowDropDownLine, RiDeleteBin6Line } from 'react-icons/ri';
 import { TiEdit } from 'react-icons/ti';
 
-export const SortByInput = ({
+export const SortByInput = <T extends Record<string, string>>({
     sortBy,
     setSortBy,
     sortByKeys,
 }: {
-    sortBy: string;
-    setSortBy: Dispatch<SetStateAction<string>>;
-    sortByKeys: Record<string, string>;
+    sortBy: keyof T & string;
+    setSortBy: Dispatch<SetStateAction<keyof T>>;
+    sortByKeys: T;
 }) => {
     return (
         <Popover isLazy lazyBehavior='keepMounted' placement='bottom-start'>
@@ -93,9 +93,9 @@ export const DeleteButtonWithAlert = ({
     const cancelRef = useRef<HTMLButtonElement>(null);
     return (
         <>
-            <Tooltip hasArrow label='Delete User'>
+            <Tooltip hasArrow label={title}>
                 <IconButton
-                    aria-label='Delete User'
+                    aria-label={title}
                     variant='ghost'
                     color='gray.500'
                     colorScheme='red'

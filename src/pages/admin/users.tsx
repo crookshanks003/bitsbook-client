@@ -35,7 +35,13 @@ import { DeleteButtonWithAlert, RoleTagWithEditModal, SortByInput } from '@/comp
 const Users: NextPageWithLayout = () => {
     const toast = useToast();
     const [_, setSearchString] = useState('');
-    const [sortBy, setSortBy] = useState('createdAt');
+    const sortByKeys = {
+        name: 'Name',
+        createdAt: 'Created At',
+        email: 'Email',
+        role: 'Role',
+    };
+    const [sortBy, setSortBy] = useState<keyof typeof sortByKeys>('createdAt');
     const { isOpen, onOpen, onClose } = useDisclosure();
 
     const { data, error, refetch } = useQuery('allUsers', () => getAllUsers(), {
@@ -145,16 +151,7 @@ const Users: NextPageWithLayout = () => {
                             onChange={(e) => setSearchString(e.target.value)}
                         />
                     </InputGroup>
-                    <SortByInput
-                        sortBy={sortBy}
-                        setSortBy={setSortBy}
-                        sortByKeys={{
-                            name: 'Name',
-                            createdAt: 'Created At',
-                            email: 'Email',
-                            role: 'Role',
-                        }}
-                    />
+                    <SortByInput sortBy={sortBy} setSortBy={setSortBy} sortByKeys={sortByKeys} />
 
                     <Spacer />
                     <Button

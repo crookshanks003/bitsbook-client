@@ -1,8 +1,9 @@
 import { DeleteButtonWithAlert, SortByInput } from '@/components/admin';
 import { AddClubModal } from '@/components/admin/addClubModal';
 import Layout from '@/components/layout';
+import { createClub, deleteClub } from '@/services/admin';
 import { getAllClubs } from '@/services/clubs';
-import { Club } from '@/types';
+import { Club, CreateClubDto } from '@/types';
 import {
     Box,
     Table,
@@ -20,7 +21,9 @@ import {
     Spacer,
     Button,
     Spinner,
+    useToast,
 } from '@chakra-ui/react';
+import { FormikHelpers } from 'formik';
 import { GetServerSideProps } from 'next';
 import { useState } from 'react';
 import { AiOutlinePlus } from 'react-icons/ai';
@@ -29,10 +32,19 @@ import { dehydrate, QueryClient, useQuery } from 'react-query';
 import { NextPageWithLayout } from '../_app';
 
 const Clubs: NextPageWithLayout = () => {
-    const { data, isLoading } = useQuery('allClubs', () => getAllClubs(), { staleTime: 30 * 1000 });
+    const { data, isLoading, refetch } = useQuery('allClubs', () => getAllClubs(), {
+        staleTime: 30 * 1000,
+    });
     const { isOpen, onOpen, onClose } = useDisclosure();
-    const [sortBy, setSortBy] = useState('createdAt');
+    const sortByKeys = {
+        createdAt: 'Created At',
+        userName: 'Username',
+        name: 'Name',
+        members: 'Members',
+    };
+    const [sortBy, setSortBy] = useState<keyof typeof sortByKeys>('createdAt');
     const [_, setSearchString] = useState('');
+    const toast = useToast();
 
     const compareFn = (a: Club, b: Club) => {
         switch (sortBy) {
@@ -44,6 +56,57 @@ const Clubs: NextPageWithLayout = () => {
             default:
                 return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         }
+    };
+
+    const handleModalFormSubmit = (
+        values: CreateClubDto,
+        actions: FormikHelpers<CreateClubDto>,
+    ) => {
+        createClub(values)
+            .then(() => {
+                toast({
+                    title: 'Club Created',
+                    status: 'success',
+                    duration: 5000,
+                    isClosable: true,
+                });
+
+                refetch().catch();
+                onClose();
+            })
+            .catch((err) => {
+                toast({
+                    title: err.status !== 500 ? 'Failed to create club' : err.message,
+                    description: err.response?.data.message || 'Failed to create club',
+                    status: 'error',
+                    duration: 5000,
+                    isClosable: true,
+                });
+            });
+
+        actions.setSubmitting(false);
+    };
+
+    const handleDeleteClub = (id: string) => {
+        deleteClub(id)
+            .then(() => {
+                toast({
+                    title: 'Club Deleted',
+                    status: 'success',
+                    duration: 5000,
+                    isClosable: true,
+                });
+                refetch().catch();
+            })
+            .catch((err) => {
+                toast({
+                    title: err.message,
+                    description: err.response?.data.message || 'Could not delete club',
+                    status: 'error',
+                    duration: 5000,
+                    isClosable: true,
+                });
+            });
     };
 
     if (isLoading) {
@@ -66,11 +129,7 @@ const Clubs: NextPageWithLayout = () => {
                             onChange={(e) => setSearchString(e.target.value)}
                         />
                     </InputGroup>
-                    <SortByInput
-                        sortBy={sortBy}
-                        setSortBy={setSortBy}
-                        sortByKeys={{ createdAt: 'Created At' }}
-                    />
+                    <SortByInput sortBy={sortBy} setSortBy={setSortBy} sortByKeys={sortByKeys} />
 
                     <Spacer />
                     <Button
@@ -115,7 +174,7 @@ const Clubs: NextPageWithLayout = () => {
                                     </Td>
                                     <Td isNumeric>
                                         <DeleteButtonWithAlert
-                                            onDelete={() => console.log('Delete')}
+                                            onDelete={() => handleDeleteClub(club._id)}
                                             title='Delete Club'
                                         />
                                     </Td>
@@ -125,11 +184,7 @@ const Clubs: NextPageWithLayout = () => {
                     </Table>
                 </TableContainer>
             </Box>
-            <AddClubModal
-                isOpen={isOpen}
-                onClose={onClose}
-                handleSubmit={() => console.log('submit')}
-            />
+            <AddClubModal isOpen={isOpen} onClose={onClose} handleSubmit={handleModalFormSubmit} />
         </>
     );
 };
