@@ -1,12 +1,12 @@
 import { Box } from '@chakra-ui/react';
 import { ReactNode } from 'react';
-import { Navbar } from './Navbar';
+import Navbar from './navbar';
 
-export function Layout({ children }: { children: ReactNode }) {
+export default function Layout({ children }: { children: ReactNode }) {
     return (
         <>
             <Navbar />
-            <Box width={['98%', '90%', '80%']} mx='auto'>
+            <Box width={['96%', '90%', '80%']} mx='auto'>
                 {children}
             </Box>
         </>

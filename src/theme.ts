@@ -1,22 +1,12 @@
-import '@fontsource/playfair-display';
-import '@fontsource/inter/100.css';
-import '@fontsource/inter/200.css';
-import '@fontsource/inter/300.css';
-import '@fontsource/inter/400.css';
-import '@fontsource/inter/500.css';
-import '@fontsource/inter/600.css';
-import '@fontsource/inter/700.css';
-import '@fontsource/inter/800.css';
-
+import { Inter, Merriweather } from 'next/font/google';
 import { ComponentStyleConfig, extendTheme, withDefaultColorScheme } from '@chakra-ui/react';
 
+const inter = Inter({ subsets: ['latin'] });
+const mw = Merriweather({ subsets: ['latin'], weight: ['400', '700'] });
+
 const DefaultButton: ComponentStyleConfig = {
-    baseStyle: {
-        rounded: 'full',
-        bgColor: 'pink.500',
-    },
     variants: {
-        outline: {
+        dafaultOutline: {
             borderColor: 'pink.500',
             color: 'pink.500',
             _hover: {
@@ -24,11 +14,18 @@ const DefaultButton: ComponentStyleConfig = {
                 color: 'white',
             },
         },
-        solid: {
+        default: {
+            rounded: 'full',
+            bgColor: 'pink.500',
+            color: 'white',
+            fontWeight: '600',
             _hover: {
                 bgColor: 'pink.400',
             },
         },
+    },
+    defaultProps: {
+        variant: 'default',
     },
 };
 
@@ -39,17 +36,11 @@ export const theme = extendTheme(
                 body: {
                     backgroundColor: 'blackAlpha.50',
                 },
-                a: {
-                    _hover: {
-                        textDecoration: 'underline',
-                        color: 'pink.500',
-                    },
-                },
             },
         },
         fonts: {
-            heading: 'Playfair Display',
-            body: 'Inter, sans-serif',
+            heading: mw.style.fontFamily,
+            body: `${inter.style.fontFamily}, sans-serif`,
         },
         components: {
             Button: DefaultButton,
