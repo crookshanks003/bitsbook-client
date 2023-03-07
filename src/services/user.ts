@@ -1,11 +1,7 @@
 import { ApiResponse, User } from '@/types';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 
-const client = axios.create({ baseURL: 'http://localhost:5000', withCredentials: true });
-
-export function getRole(): Promise<AxiosResponse<string>> {
-    return client.get('/auth/get-role');
-}
+const client = axios.create({ baseURL: 'http://localhost:5000/user', withCredentials: true });
 
 export async function getAllUsers(token?: string): Promise<ApiResponse<User[]>> {
     const config = token
@@ -13,6 +9,6 @@ export async function getAllUsers(token?: string): Promise<ApiResponse<User[]>> 
               headers: { Cookie: `token=${token}` },
           }
         : undefined;
-    const { data } = await client.get<ApiResponse<User[]>>('/user/all', config);
+    const { data } = await client.get<ApiResponse<User[]>>('/all', config);
     return data;
 }

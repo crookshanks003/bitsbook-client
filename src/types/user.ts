@@ -27,3 +27,8 @@ export interface UpdateUserRoleDto {
     role: string;
     userId: string;
 }
+
+export interface UserLoginDto {
+    email: string;
+    password: string;
+}

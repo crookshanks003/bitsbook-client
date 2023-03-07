@@ -4,7 +4,7 @@ export interface ApiResponse<T = any> {
     time: number;
 }
 
-export interface ApiError {
+export interface ApiResponseError {
     message: string;
     payload: {
         message: string;
