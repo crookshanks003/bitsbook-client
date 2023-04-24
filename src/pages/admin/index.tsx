@@ -88,10 +88,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     const queryClient = new QueryClient();
     try {
-        const { data } = await queryClient.fetchQuery('getRole', () => getRole(), {
+        const role = await queryClient.fetchQuery('getRole', () => getRole(token), {
             staleTime: Infinity,
         });
-        if (data !== Role.ADMIN) {
+        if (role !== Role.ADMIN) {
             return {
                 redirect: {
                     destination: '/',

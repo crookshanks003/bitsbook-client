@@ -20,7 +20,7 @@ import { MdOutlineClose, MdMenu } from 'react-icons/md';
 import Logo from './logo';
 import NextLink from 'next/link';
 import { useQuery } from 'react-query';
-import { getUserProfile } from '@/services/auth';
+import { getNavbarProfile } from '@/services/auth';
 import { logout } from '@/services/auth';
 import { useRouter } from 'next/router';
 import { Role } from '@/types';
@@ -47,16 +47,24 @@ const NavLink = ({ children, href }: { children: ReactNode; href: string }) => (
     </NextLink>
 );
 
-export default function Navbar() {
+export default function Navbar({ role }: { role: Role }) {
     const { isOpen, onOpen, onClose } = useDisclosure();
-    const links = [
-        { name: 'Home', href: '/' },
-        { name: 'Clubs', href: '/clubs' },
-        { name: 'Notices', href: '/notices' },
-        { name: 'History', href: '/history' },
-    ];
+    const links =
+        role === Role.USER
+            ? [
+                  { name: 'Home', href: '/' },
+                  { name: 'Clubs', href: '/clubs' },
+                  { name: 'Notices', href: '/notices' },
+                  { name: 'History', href: '/history' },
+              ]
+            : [
+                  { name: 'Home', href: '/' },
+                  { name: 'Members', href: '/club/members' },
+                  { name: 'Notices', href: '/club/notices' },
+                  { name: 'Create', href: '/club/create' },
+              ];
 
-    const { data, remove } = useQuery(['getProfile', 'navbar'], getUserProfile, {
+    const { data, remove } = useQuery('getProfile', () => getNavbarProfile(), {
         staleTime: Infinity,
     });
     const router = useRouter();
@@ -108,17 +116,16 @@ export default function Navbar() {
                         >
                             <Avatar
                                 size='sm'
-                                src={undefined}
-                                name={data?.data.payload?.name}
+                                name={data?.payload?.name}
                                 background='pink.500'
                                 color='white'
                             />
                         </MenuButton>
                         <MenuList>
-                            <MenuItem onClick={() => console.log('go to profile')}>
+                            <MenuItem as={NextLink} href='/profile'>
                                 Profile
                             </MenuItem>
-                            {data?.data.payload?.role === Role.ADMIN && (
+                            {data?.payload?.role === Role.ADMIN && (
                                 <MenuItem as={NextLink} href='/admin'>
                                     Admin
                                 </MenuItem>

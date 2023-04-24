@@ -187,7 +187,7 @@ const Users: NextPageWithLayout = () => {
                             </Tr>
                         </Thead>
                         <Tbody>
-                            {data.payload?.sort(compareFn).map((user, i) => (
+                            {data?.payload?.sort(compareFn).map((user, i) => (
                                 <Tr key={i}>
                                     <Td>{user.name}</Td>
                                     <Td>{user.email}</Td>
