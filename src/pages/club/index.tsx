@@ -1,16 +1,22 @@
 import Layout from '@/components/layout';
-import Post from '@/components/post';
+import PostCard from '@/components/post';
+import { getClubFeed } from '@/services/post';
 import { Role } from '@/types';
-import { Heading } from '@chakra-ui/react';
+import { Stack, useToast } from '@chakra-ui/react';
 import { GetServerSideProps } from 'next';
+import { useQuery } from 'react-query';
 import { NextPageWithLayout } from '../_app';
 
 const Club: NextPageWithLayout = () => {
+    const toast = useToast();
+    const { data, refetch } = useQuery('clubFeedPosts', getClubFeed);
+
     return (
-        <>
-            <Heading>Hello World</Heading>
-            <Post />
-        </>
+        <Stack w='50%' mx='auto' spacing={2} mt='12'>
+            {data?.payload?.map((post, i) => (
+                <PostCard key={i} post={post} refetch={refetch} toast={toast} />
+            ))}
+        </Stack>
     );
 };
 

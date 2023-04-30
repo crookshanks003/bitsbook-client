@@ -49,8 +49,11 @@ const NavLink = ({ children, href }: { children: ReactNode; href: string }) => (
 
 export default function Navbar({ role }: { role: Role }) {
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const { data: profile, remove } = useQuery('getNavbarProfile', () => getNavbarProfile(), {
+        staleTime: Infinity,
+    });
     const links =
-        role === Role.USER
+        profile?.payload?.role === Role.USER
             ? [
                   { name: 'Home', href: '/' },
                   { name: 'Clubs', href: '/clubs' },
@@ -64,9 +67,6 @@ export default function Navbar({ role }: { role: Role }) {
                   { name: 'Create', href: '/club/create' },
               ];
 
-    const { data, remove } = useQuery('getProfile', () => getNavbarProfile(), {
-        staleTime: Infinity,
-    });
     const router = useRouter();
 
     const logOut = () => {
@@ -116,16 +116,19 @@ export default function Navbar({ role }: { role: Role }) {
                         >
                             <Avatar
                                 size='sm'
-                                name={data?.payload?.name}
+                                name={profile?.payload?.name}
                                 background='pink.500'
                                 color='white'
                             />
                         </MenuButton>
                         <MenuList>
-                            <MenuItem as={NextLink} href='/profile'>
+                            <MenuItem
+                                as={NextLink}
+                                href={role === Role.CLUB ? '/club/profile' : '/profile'}
+                            >
                                 Profile
                             </MenuItem>
-                            {data?.payload?.role === Role.ADMIN && (
+                            {profile?.payload?.role === Role.ADMIN && (
                                 <MenuItem as={NextLink} href='/admin'>
                                     Admin
                                 </MenuItem>

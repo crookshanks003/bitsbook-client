@@ -62,10 +62,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         };
     }
 
-    if (role === Role.CLUB) {
+    if (role !== Role.CLUB) {
         return {
             redirect: {
-                destination: '/club/profile',
+                destination: '/profile',
                 permanent: false,
             },
         };
