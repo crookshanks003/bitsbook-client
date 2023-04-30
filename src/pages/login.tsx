@@ -3,38 +3,51 @@ import {
     Box,
     Button,
     Card,
+    Center,
     Divider,
     Flex,
     FormControl,
+    FormErrorMessage,
     Input,
-    Link,
     Spacer,
-    Spinner,
     Text,
+    Link,
+    useToast,
 } from '@chakra-ui/react';
 import { NextPageWithLayout } from './_app';
-import NextLink from 'next/link';
-import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { login } from '@/services/auth';
 import { GetServerSideProps } from 'next';
+import { Field, FieldProps, Form, Formik, FormikHelpers } from 'formik';
+import { ApiResponseError, UserLoginDto } from '@/types';
+import { isAxiosError } from 'axios';
+import NextLink from 'next/link';
 
 const Login: NextPageWithLayout = () => {
+    const re =
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     const router = useRouter();
-    const [email, setEmail] = useState('');
-    const [buttonLoading, setButtonLoading] = useState(false);
-    const onSubmit = () => {
-        setButtonLoading(true);
-        if (!email) return;
-        login(email)
+    const toast = useToast();
+
+    const onSubmit = (values: UserLoginDto, actions: FormikHelpers<UserLoginDto>) => {
+        actions.setSubmitting(true);
+        login(values)
             .then((res) => {
-                if (res.data.error) return;
                 router.push('/');
+                localStorage.setItem('role', res.data.role);
             })
             .catch((err) => {
+                if (isAxiosError<ApiResponseError>(err)) {
+                    toast({
+                        title: err.response?.data.message,
+                        isClosable: true,
+                        status: 'error',
+                        duration: 9000,
+                    });
+                }
                 console.log(err);
             });
-        setButtonLoading(false);
+        actions.setSubmitting(false);
     };
 
     return (
@@ -46,63 +59,122 @@ const Login: NextPageWithLayout = () => {
                 </Text>
             </Box>
             <Spacer />
-            <Card px='4' py='4' w='sm'>
-                <FormControl>
-                    <Input
-                        type='email'
-                        placeholder='Email'
-                        p='6'
-                        borderColor='gray.300'
-                        rounded='full'
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                </FormControl>
-                <FormControl>
-                    <Input
-                        type='password'
-                        placeholder='Password'
-                        my='4'
-                        p='6'
-                        borderColor='gray.300'
-                        rounded='full'
-                    />
-                </FormControl>
-                <Button
-                    py='6'
-                    as={NextLink}
-                    href='/'
-                    _hover={{ color: 'white', bgColor: 'pink.600' }}
-                    onClick={onSubmit}
-                >
-                    {buttonLoading ? <Spinner /> : 'Log In'}
-                </Button>
-                <Link>
-                    <Text
-                        textAlign='center'
-                        mt='4'
-                        fontWeight='500'
-                        color='pink.500'
-                        _hover={{ textDecoration: 'underline' }}
-                    >
-                        Forgot Password
-                    </Text>
-                </Link>
-                <Divider color='gray.300' my='4' />
-                <Text textAlign='center' color='gray.500'>
-                    New Here?{' '}
-                    <Link _hover={{ color: 'pink.500', textDecoration: 'underline' }}>
-                        Create Account
-                    </Link>
+            <Box>
+                <Card px='4' py='4' w='sm'>
+                    <Formik initialValues={{ email: '', password: '' }} onSubmit={onSubmit}>
+                        {(props) => (
+                            <Form>
+                                <Field
+                                    name='email'
+                                    validate={(value: string) => {
+                                        if (!value) return 'Email cannot be empty';
+                                        if (!value.toLowerCase().match(re)) return 'Invalid email';
+                                    }}
+                                >
+                                    {({ form, field }: FieldProps<any, UserLoginDto>) => (
+                                        <FormControl
+                                            isInvalid={
+                                                (form.errors.email && form.touched.email) as boolean
+                                            }
+                                        >
+                                            <Input
+                                                placeholder='Email'
+                                                p='6'
+                                                borderColor='gray.300'
+                                                rounded='full'
+                                                {...field}
+                                            />
+                                            <FormErrorMessage ms='5'>
+                                                {form.errors.email as string}
+                                            </FormErrorMessage>
+                                        </FormControl>
+                                    )}
+                                </Field>
+                                <Field
+                                    name='password'
+                                    validate={(value: string) => {
+                                        if (!value) return 'Password cannot be empty';
+                                    }}
+                                >
+                                    {({ form, field }: FieldProps<any, UserLoginDto>) => (
+                                        <FormControl
+                                            isInvalid={
+                                                (form.errors.password &&
+                                                    form.touched.password) as boolean
+                                            }
+                                            my='4'
+                                        >
+                                            <Input
+                                                placeholder='Password'
+                                                p='6'
+                                                borderColor='gray.300'
+                                                rounded='full'
+                                                type='password'
+                                                {...field}
+                                            />
+                                            <FormErrorMessage ms='5'>
+                                                {form.errors.password as string}
+                                            </FormErrorMessage>
+                                        </FormControl>
+                                    )}
+                                </Field>
+                                <Button
+                                    w='full'
+                                    py='6'
+                                    _hover={{ color: 'white', bgColor: 'pink.600' }}
+                                    type='submit'
+                                    isLoading={props.isSubmitting}
+                                >
+                                    Log In
+                                </Button>
+                            </Form>
+                        )}
+                    </Formik>
+                    <NextLink href='/' passHref legacyBehavior>
+                        <Link
+                            textAlign='center'
+                            mt='4'
+                            fontWeight='500'
+                            color='pink.500'
+                            _hover={{ textDecoration: 'underline' }}
+                        >
+                            Forgot Password
+                        </Link>
+                    </NextLink>
+                    <Divider color='gray.300' my='4' />
+                    <Center color='gray.500'>
+                        New Here?
+                        <Link
+                            ms='1'
+                            fontWeight='semibold'
+                            color='gray.600'
+                            _hover={{ color: 'pink.500', textDecoration: 'underline' }}
+                        >
+                            Create Account
+                        </Link>
+                    </Center>
+                </Card>
+                <Text textAlign='center' mt='4' fontSize='sm' color='gray.500'>
+                    <NextLink href='/club-login' passHref legacyBehavior>
+                        <Link
+                            color='gray.600'
+                            _hover={{ color: 'pink.500', textDecoration: 'underline' }}
+                            fontWeight='semibold'
+                        >
+                            Login
+                        </Link>
+                    </NextLink>{' '}
+                    as a Club
                 </Text>
-            </Card>
+            </Box>
         </Flex>
     );
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-    const user = context.req.cookies.token;
+    const token = context.req.cookies.token;
 
-    if (user) {
+    if (token) {
         return {
             redirect: {
                 destination: '/',

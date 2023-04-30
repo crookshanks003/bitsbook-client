@@ -14,14 +14,16 @@ import {
     Stack,
     MenuDivider,
     Link,
-    Spinner,
     Spacer,
 } from '@chakra-ui/react';
 import { MdOutlineClose, MdMenu } from 'react-icons/md';
 import Logo from './logo';
 import NextLink from 'next/link';
 import { useQuery } from 'react-query';
-import { getRole } from '@/services/user';
+import { getNavbarProfile } from '@/services/auth';
+import { logout } from '@/services/auth';
+import { useRouter } from 'next/router';
+import { Role } from '@/types';
 
 const NavLink = ({ children, href }: { children: ReactNode; href: string }) => (
     <NextLink href={href} passHref legacyBehavior>
@@ -45,20 +47,35 @@ const NavLink = ({ children, href }: { children: ReactNode; href: string }) => (
     </NextLink>
 );
 
-export default function Navbar() {
+export default function Navbar({ role }: { role: Role }) {
     const { isOpen, onOpen, onClose } = useDisclosure();
-    const links = [
-        { name: 'Home', href: '/' },
-        { name: 'Clubs', href: '/clubs' },
-        { name: 'Notices', href: '/notices' },
-        { name: 'History', href: '/history' },
-    ];
+    const { data: profile, remove } = useQuery('getNavbarProfile', () => getNavbarProfile(), {
+        staleTime: Infinity,
+    });
+    const links =
+        profile?.payload?.role === Role.USER
+            ? [
+                  { name: 'Home', href: '/' },
+                  { name: 'Clubs', href: '/clubs' },
+                  { name: 'Notices', href: '/notices' },
+                  { name: 'History', href: '/history' },
+              ]
+            : [
+                  { name: 'Home', href: '/' },
+                  { name: 'Members', href: '/club/members' },
+                  { name: 'Notices', href: '/club/notices' },
+                  { name: 'Create', href: '/club/create' },
+              ];
 
-    const { data, isLoading } = useQuery('getRole', getRole, { retry: 1 });
-    const user = { name: 'Pritesh', role: 'ADMIN' };
+    const router = useRouter();
 
     const logOut = () => {
-        console.log('Logged Out');
+        logout()
+            .then(() => {
+                remove();
+                router.replace('/login');
+            })
+            .catch();
     };
 
     return (
@@ -88,40 +105,38 @@ export default function Navbar() {
                 </HStack>
                 <Spacer />
                 <Flex alignItems={'center'}>
-                    {!isLoading ? (
-                        <Menu>
-                            <MenuButton
-                                as={Button}
-                                rounded={'full'}
-                                variant={'link'}
-                                cursor={'pointer'}
-                                background='gray.700'
-                                minW={0}
+                    <Menu>
+                        <MenuButton
+                            as={Button}
+                            rounded={'full'}
+                            variant={'link'}
+                            cursor={'pointer'}
+                            background='gray.700'
+                            minW={0}
+                        >
+                            <Avatar
+                                size='sm'
+                                name={profile?.payload?.name}
+                                background='pink.500'
+                                color='white'
+                            />
+                        </MenuButton>
+                        <MenuList>
+                            <MenuItem
+                                as={NextLink}
+                                href={role === Role.CLUB ? '/club/profile' : '/profile'}
                             >
-                                <Avatar
-                                    size='sm'
-                                    src={undefined}
-                                    name={user.name}
-                                    background='pink.500'
-                                    color='white'
-                                />
-                            </MenuButton>
-                            <MenuList>
-                                <MenuItem onClick={() => console.log('go to profile')}>
-                                    Profile
+                                Profile
+                            </MenuItem>
+                            {profile?.payload?.role === Role.ADMIN && (
+                                <MenuItem as={NextLink} href='/admin'>
+                                    Admin
                                 </MenuItem>
-                                {data?.data === 'admin' && (
-                                    <MenuItem as={NextLink} href='/admin'>
-                                        Admin
-                                    </MenuItem>
-                                )}
-                                <MenuDivider />
-                                <MenuItem onClick={logOut}>Log out</MenuItem>
-                            </MenuList>
-                        </Menu>
-                    ) : (
-                        <Spinner size='xs' />
-                    )}
+                            )}
+                            <MenuDivider />
+                            <MenuItem onClick={logOut}>Log out</MenuItem>
+                        </MenuList>
+                    </Menu>
                 </Flex>
             </HStack>
 

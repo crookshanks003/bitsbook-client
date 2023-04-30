@@ -36,6 +36,10 @@ export const theme = extendTheme(
                 body: {
                     backgroundColor: 'blackAlpha.50',
                 },
+                a: {
+                    color: 'blue.400',
+                    _hover: { textDecoration: 'underline' },
+                },
             },
         },
         fonts: {

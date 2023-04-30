@@ -1,8 +1,8 @@
 import Layout from '@/components/layout';
 import { getAllUsers } from '@/services/user';
 import { createUser, editUserRole } from '@/services/admin';
-import { CreateUserDto, User } from '@/types';
-import axios from 'axios';
+import { ApiResponseError, CreateUserDto, User } from '@/types';
+import axios, { isAxiosError } from 'axios';
 import { GetServerSideProps } from 'next';
 import { NextPageWithLayout } from '../_app';
 import {
@@ -26,11 +26,12 @@ import {
 import { AiOutlinePlus } from 'react-icons/ai';
 import { BiSearch } from 'react-icons/bi';
 import { deleteUser } from '@/services/admin';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { AddUserModal } from '@/components/admin/addUserModal';
 import { dehydrate, QueryClient, useQuery } from 'react-query';
 import { FormikHelpers } from 'formik';
 import { DeleteButtonWithAlert, RoleTagWithEditModal, SortByInput } from '@/components/admin';
+import Loader from '@/components/loader';
 
 const Users: NextPageWithLayout = () => {
     const toast = useToast();
@@ -47,8 +48,12 @@ const Users: NextPageWithLayout = () => {
     const { data, error, refetch } = useQuery('allUsers', () => getAllUsers(), {
         staleTime: 30 * 1000,
     });
-    if (error || !data) {
-        return <Text>Something went wrong</Text>;
+    if (error) {
+        return (
+            <Text color='red' mt='10' size='xl'>
+                Something went wrong
+            </Text>
+        );
     }
 
     const compareFn = (a: User, b: User) => {
@@ -139,7 +144,7 @@ const Users: NextPageWithLayout = () => {
     };
 
     return (
-        <>
+        <Suspense fallback={<Loader size='lg' />}>
             <Box mt='16' mx='auto'>
                 <HStack spacing='3' fontSize='1'>
                     <InputGroup maxW='25%'>
@@ -182,7 +187,7 @@ const Users: NextPageWithLayout = () => {
                             </Tr>
                         </Thead>
                         <Tbody>
-                            {data.payload?.sort(compareFn).map((user, i) => (
+                            {data?.payload?.sort(compareFn).map((user, i) => (
                                 <Tr key={i}>
                                     <Td>{user.name}</Td>
                                     <Td>{user.email}</Td>
@@ -213,7 +218,7 @@ const Users: NextPageWithLayout = () => {
                 </TableContainer>
             </Box>
             <AddUserModal isOpen={isOpen} onClose={onClose} handleSubmit={handleModalFormSubmit} />
-        </>
+        </Suspense>
     );
 };
 
@@ -222,9 +227,9 @@ Users.getLayout = (page) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-    const user = context.req.cookies.token;
+    const token = context.req.cookies.token;
 
-    if (!user) {
+    if (!token) {
         return {
             redirect: {
                 destination: '/login',
@@ -232,23 +237,28 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             },
         };
     }
-    if (user !== 'admin') {
-        return {
-            redirect: {
-                destination: '/',
-                permanent: false,
-            },
-        };
-    }
 
     const queryClient = new QueryClient();
-    await queryClient.prefetchQuery(
-        'allUsers',
-        () => {
-            return getAllUsers(user);
-        },
-        { staleTime: 30 * 1000 },
-    );
+    try {
+        await queryClient.fetchQuery(
+            'allUsers',
+            () => {
+                return getAllUsers(token);
+            },
+            { staleTime: 30 * 1000 },
+        );
+    } catch (error) {
+        if (isAxiosError<ApiResponseError>(error)) {
+            if (error.response?.status === 401) {
+                return {
+                    redirect: {
+                        destination: '/',
+                        permanent: false,
+                    },
+                };
+            }
+        }
+    }
     return {
         props: {
             dehydratedState: dehydrate(queryClient),

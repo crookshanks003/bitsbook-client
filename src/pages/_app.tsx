@@ -10,8 +10,8 @@ export type NextPageWithLayout<P = Record<string, any>, IP = P> = NextPage<P, IP
     getLayout?: (page: ReactElement) => ReactNode;
 };
 
-type AppPropsWithLayout = AppProps & {
-    Component: NextPageWithLayout;
+type AppPropsWithLayout<P = Record<string, any>, IP = P> = AppProps & {
+    Component: NextPageWithLayout<P, IP>;
 };
 
 export default function App({ Component, pageProps }: AppPropsWithLayout) {

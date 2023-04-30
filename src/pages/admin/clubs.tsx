@@ -1,9 +1,10 @@
 import { DeleteButtonWithAlert, SortByInput } from '@/components/admin';
 import { AddClubModal } from '@/components/admin/addClubModal';
 import Layout from '@/components/layout';
+import Loader from '@/components/loader';
 import { createClub, deleteClub } from '@/services/admin';
 import { getAllClubs } from '@/services/clubs';
-import { Club, CreateClubDto } from '@/types';
+import { ApiResponseError, Club, CreateClubDto } from '@/types';
 import {
     Box,
     Table,
@@ -23,9 +24,10 @@ import {
     Spinner,
     useToast,
 } from '@chakra-ui/react';
+import { isAxiosError } from 'axios';
 import { FormikHelpers } from 'formik';
 import { GetServerSideProps } from 'next';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { AiOutlinePlus } from 'react-icons/ai';
 import { BiSearch } from 'react-icons/bi';
 import { dehydrate, QueryClient, useQuery } from 'react-query';
@@ -117,7 +119,7 @@ const Clubs: NextPageWithLayout = () => {
     }
 
     return (
-        <>
+        <Suspense fallback={<Loader size='lg' />}>
             <Box mt='16' mx='auto'>
                 <HStack spacing='3' fontSize='1'>
                     <InputGroup maxW='25%'>
@@ -185,7 +187,7 @@ const Clubs: NextPageWithLayout = () => {
                 </TableContainer>
             </Box>
             <AddClubModal isOpen={isOpen} onClose={onClose} handleSubmit={handleModalFormSubmit} />
-        </>
+        </Suspense>
     );
 };
 
@@ -194,9 +196,9 @@ Clubs.getLayout = (page) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-    const user = context.req.cookies.token;
+    const token = context.req.cookies.token;
 
-    if (!user) {
+    if (!token) {
         return {
             redirect: {
                 destination: '/login',
@@ -204,23 +206,28 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             },
         };
     }
-    if (user !== 'admin') {
-        return {
-            redirect: {
-                destination: '/',
-                permanent: false,
-            },
-        };
-    }
 
     const queryClient = new QueryClient();
-    await queryClient.prefetchQuery(
-        'allClubs',
-        () => {
-            return getAllClubs(user);
-        },
-        { staleTime: 30 * 1000 },
-    );
+    try {
+        await queryClient.fetchQuery(
+            'allClubs',
+            () => {
+                return getAllClubs(token);
+            },
+            { staleTime: 30 * 1000 },
+        );
+    } catch (error) {
+        if (isAxiosError<ApiResponseError>(error)) {
+            if (error.response?.status === 401) {
+                return {
+                    redirect: {
+                        destination: '/',
+                        permanent: false,
+                    },
+                };
+            }
+        }
+    }
     return {
         props: {
             dehydratedState: dehydrate(queryClient),

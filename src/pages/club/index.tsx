@@ -1,18 +1,18 @@
 import Layout from '@/components/layout';
 import PostCard from '@/components/post';
-import { getUserFeed } from '@/services/post';
+import { getClubFeed } from '@/services/post';
 import { Role } from '@/types';
 import { Stack, useToast } from '@chakra-ui/react';
 import { GetServerSideProps } from 'next';
 import { useQuery } from 'react-query';
-import { NextPageWithLayout } from './_app';
+import { NextPageWithLayout } from '../_app';
 
 const Club: NextPageWithLayout = () => {
-    const { data, refetch } = useQuery('userFeedPosts', getUserFeed);
     const toast = useToast();
+    const { data, refetch } = useQuery('clubFeedPosts', getClubFeed);
 
     return (
-        <Stack w='50%' mx='auto' spacing={2} mt='16'>
+        <Stack w='50%' mx='auto' spacing={2} mt='12'>
             {data?.payload?.map((post, i) => (
                 <PostCard key={i} post={post} refetch={refetch} toast={toast} />
             ))}
@@ -36,10 +36,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         };
     }
     const role = context.req.cookies.role;
-    if (!role || (role !== Role.USER && role !== Role.ADMIN)) {
+    if (!role || role !== Role.CLUB) {
         return {
             redirect: {
-                destination: '/club',
+                destination: '/',
                 permanent: false,
             },
         };

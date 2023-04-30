@@ -6,8 +6,11 @@ import { AiOutlineUser } from 'react-icons/ai';
 import { MdOutlineLocalActivity } from 'react-icons/md';
 import { HiOutlineDocumentText } from 'react-icons/hi';
 import NextLink from 'next/link';
+import { getRole } from '@/services/auth';
+import { Role } from '@/types';
+import { QueryClient } from 'react-query';
 
-const Admin: NextPageWithLayout<{ user: string }> = () => {
+const Admin: NextPageWithLayout = () => {
     return (
         <Box pt='8'>
             <SimpleGrid spacing={5} templateColumns='repeat(auto-fill, minmax(200px, 1fr))'>
@@ -72,9 +75,9 @@ Admin.getLayout = (page) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-    const user = context.req.cookies.token;
+    const token = context.req.cookies.token;
 
-    if (!user) {
+    if (!token) {
         return {
             redirect: {
                 destination: '/login',
@@ -82,7 +85,21 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             },
         };
     }
-    if (user !== 'admin') {
+
+    const queryClient = new QueryClient();
+    try {
+        const role = await queryClient.fetchQuery('getRole', () => getRole(token), {
+            staleTime: Infinity,
+        });
+        if (role !== Role.ADMIN) {
+            return {
+                redirect: {
+                    destination: '/',
+                    permanent: false,
+                },
+            };
+        }
+    } catch (err) {
         return {
             redirect: {
                 destination: '/',
@@ -92,9 +109,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
 
     return {
-        props: {
-            user,
-        },
+        props: {},
     };
 };
 
