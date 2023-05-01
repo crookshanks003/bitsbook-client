@@ -1,5 +1,6 @@
 import { ApiResponse } from '@/types';
 import { CreatePostDto, Post } from '@/types/post';
+import { User } from '@/types/user';
 import axios from 'axios';
 
 const client = axios.create({ baseURL: 'http://localhost:5000/post', withCredentials: true });
@@ -50,5 +51,10 @@ export async function addComment(id: string, content: string): Promise<ApiRespon
 
 export async function getPublicPosts(): Promise<ApiResponse<Post[]>> {
     const { data } = await client.get('/public');
+    return data;
+}
+
+export async function getPostLikes(id: string): Promise<ApiResponse<{ interested: User[] }>> {
+    const { data } = await client.get(`/likes/${id}`);
     return data;
 }
