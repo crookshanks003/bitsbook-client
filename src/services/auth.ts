@@ -1,8 +1,13 @@
-import { ApiResponse, ClubLoginDto, NavbarProfile, UserLoginDto } from '@/types';
+import { ApiResponse, ClubLoginDto, NavbarProfile, UserLoginDto, Role } from '@/types';
 import axios from 'axios';
 import { serverUrl } from '.';
 
 const client = axios.create({ baseURL: `${serverUrl}/auth`, withCredentials: true });
+
+export async function isLoggedIn(): Promise<ApiResponse<{ loggedIn: boolean; role: Role }>> {
+    const { data } = await client.get('/is-logged-in');
+    return data;
+}
 
 export function login(creds: UserLoginDto) {
     return client.post('/login', creds);
@@ -32,6 +37,6 @@ export async function getRole(token?: string): Promise<string> {
               headers: { Cookie: `token=${token}` },
           }
         : undefined;
-    const { data } = await client.get('/get-role', config);
+    const { data } = await client.get('/role', config);
     return data;
 }

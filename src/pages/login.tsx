@@ -22,6 +22,7 @@ import { Field, FieldProps, Form, Formik, FormikHelpers } from 'formik';
 import { ApiResponseError, UserLoginDto } from '@/types';
 import { isAxiosError } from 'axios';
 import NextLink from 'next/link';
+import { setCookie } from 'nookies';
 
 const Login: NextPageWithLayout = () => {
     const re =
@@ -34,6 +35,8 @@ const Login: NextPageWithLayout = () => {
         login(values)
             .then((res) => {
                 router.push('/');
+                setCookie(null, 'role', res.data.payload.role);
+                setCookie(null, 'token', res.data.payload.token);
                 localStorage.setItem('role', res.data.role);
             })
             .catch((err) => {

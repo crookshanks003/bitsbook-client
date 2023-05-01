@@ -18,6 +18,7 @@ import { Field, FieldProps, Form, Formik, FormikHelpers } from 'formik';
 import { ApiResponseError, ClubLoginDto } from '@/types';
 import { isAxiosError } from 'axios';
 import NextLink from 'next/link';
+import { setCookie } from 'nookies';
 
 const ClubLogin: NextPageWithLayout = () => {
     const router = useRouter();
@@ -27,8 +28,10 @@ const ClubLogin: NextPageWithLayout = () => {
         actions.setSubmitting(true);
         clubLogin(values)
             .then((res) => {
-                router.push('/');
+                setCookie(null, 'role', res.data.payload.role);
+                setCookie(null, 'token', res.data.payload.token);
                 localStorage.setItem('role', res.data.role);
+                router.push('/');
             })
             .catch((err) => {
                 if (isAxiosError<ApiResponseError>(err)) {

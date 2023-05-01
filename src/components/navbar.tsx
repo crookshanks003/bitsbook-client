@@ -24,6 +24,7 @@ import { getNavbarProfile } from '@/services/auth';
 import { logout } from '@/services/auth';
 import { useRouter } from 'next/router';
 import { Role } from '@/types';
+import { destroyCookie } from 'nookies';
 
 const NavLink = ({ children, href }: { children: ReactNode; href: string }) => (
     <NextLink href={href} passHref legacyBehavior>
@@ -71,6 +72,8 @@ export default function Navbar({ role }: { role: Role }) {
         logout()
             .then(() => {
                 remove();
+                destroyCookie(null, 'token');
+                destroyCookie(null, 'role');
                 router.replace('/login');
             })
             .catch();
