@@ -1,7 +1,8 @@
 import { ApiResponse, Club, ClubMember, DashboardData, User } from '@/types';
 import axios from 'axios';
+import { serverUrl } from '.';
 
-const client = axios.create({ baseURL: 'http://localhost:5000/club', withCredentials: true });
+const client = axios.create({ baseURL: `${serverUrl}/club`, withCredentials: true });
 
 export async function getAllClubs(token?: string): Promise<ApiResponse<Club[]>> {
     const config = token

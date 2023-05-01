@@ -1,7 +1,8 @@
 import { ApiResponse, Club, PopulatedUser, User } from '@/types';
 import axios from 'axios';
+import { serverUrl } from '.';
 
-const client = axios.create({ baseURL: 'http://localhost:5000/user', withCredentials: true });
+const client = axios.create({ baseURL: `${serverUrl}/user`, withCredentials: true });
 
 export async function getAllUsers(token?: string): Promise<ApiResponse<User[]>> {
     const config = token

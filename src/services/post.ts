@@ -2,8 +2,9 @@ import { ApiResponse } from '@/types';
 import { CreatePostDto, Post } from '@/types/post';
 import { User } from '@/types/user';
 import axios from 'axios';
+import { serverUrl } from '.';
 
-const client = axios.create({ baseURL: 'http://localhost:5000/post', withCredentials: true });
+const client = axios.create({ baseURL: `${serverUrl}/post`, withCredentials: true });
 
 export async function createPost(dto: CreatePostDto): Promise<ApiResponse<Post>> {
     const { data } = await client.post('/create', dto);

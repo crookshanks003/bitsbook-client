@@ -1,7 +1,8 @@
 import { ApiResponse, ClubLoginDto, NavbarProfile, UserLoginDto } from '@/types';
 import axios from 'axios';
+import { serverUrl } from '.';
 
-const client = axios.create({ baseURL: 'http://localhost:5000/auth', withCredentials: true });
+const client = axios.create({ baseURL: `${serverUrl}/auth`, withCredentials: true });
 
 export function login(creds: UserLoginDto) {
     return client.post('/login', creds);
