@@ -1,1 +1,1 @@
-export const serverUrl = 'https://bitsbook-server.onrender.com';
+export const serverUrl = 'http://localhost:5000';
