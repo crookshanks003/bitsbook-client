@@ -21,8 +21,10 @@ import {
     ModalHeader,
     ModalOverlay,
     ModalCloseButton,
+    Link,
 } from '@chakra-ui/react';
 import ReactHtmlParser from 'html-react-parser';
+import NextLink from 'next/link';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
 import { useQuery } from 'react-query';
 import { DeleteButtonWithAlert } from './admin';
@@ -75,7 +77,11 @@ export default function PostCard({
                     <Stack direction={'row'} spacing={4} align={'center'}>
                         <Avatar name={post.author.name.split(' ')[0]} size='sm' />
                         <Stack direction={'column'} spacing={0} fontSize={'sm'}>
-                            <Text fontWeight={600}>{post.author.name}</Text>
+                            <NextLink passHref href={`/club/info/${post.author._id}`}>
+                                <Link fontWeight={600} color='gray.700'>
+                                    {post.author.name}
+                                </Link>
+                            </NextLink>
                             <Text color={'gray.500'}>
                                 {new Date(post.createdAt).toLocaleDateString('en-IN', {
                                     day: 'numeric',

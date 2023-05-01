@@ -23,6 +23,11 @@ export async function getClubProfile(token?: string): Promise<ApiResponse<Club>>
     return data;
 }
 
+export async function getClubInfo(id: string) {
+    const { data } = await client.get(`/${id}`);
+    return data;
+}
+
 export async function getClubMembers(): Promise<ApiResponse<ClubMember[]>> {
     const { data } = await client.get('/members');
     return data;

@@ -13,6 +13,7 @@ import {
 import { BiSearch } from 'react-icons/bi';
 import { useMemo, useState } from 'react';
 import { PopulatedUser } from '@/types';
+import NextLink from 'next/link';
 
 export default function ClubTable({ user }: { user?: PopulatedUser }) {
     const [searchString, setSearchString] = useState('');
@@ -52,7 +53,11 @@ export default function ClubTable({ user }: { user?: PopulatedUser }) {
                     <Tbody>
                         {searchData?.map((club, i) => (
                             <Tr key={i}>
-                                <Td>{club.clubId.name}</Td>
+                                <Td>
+                                    <NextLink href={`/club/info/${club.clubId._id}`}>
+                                        {club.clubId.name}
+                                    </NextLink>
+                                </Td>
                                 <Td>{club.role}</Td>
                                 <Td>
                                     {new Date(club.createdAt || Date.now()).toLocaleDateString(

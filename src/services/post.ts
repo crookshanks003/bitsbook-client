@@ -34,6 +34,11 @@ export async function getClubPosts(): Promise<ApiResponse<Post[]>> {
     return data;
 }
 
+export async function getClubPostsById(id: string): Promise<ApiResponse<Post[]>> {
+    const { data } = await client.get(`/club-posts/${id}`);
+    return data;
+}
+
 export async function markInterested(id: string): Promise<ApiResponse> {
     const { data } = await client.post(`/interested/${id}`);
     return data;
