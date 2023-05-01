@@ -21,7 +21,7 @@ const Club: NextPageWithLayout = () => {
 };
 
 Club.getLayout = (page) => {
-    return <Layout role={Role.CLUB}>{page}</Layout>;
+    return <Layout role={Role.USER}>{page}</Layout>;
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {

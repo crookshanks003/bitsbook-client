@@ -4,11 +4,8 @@ import { GetServerSideProps } from 'next';
 import { NextPageWithLayout } from '../_app';
 import { AiOutlineUser } from 'react-icons/ai';
 import { MdOutlineLocalActivity } from 'react-icons/md';
-import { HiOutlineDocumentText } from 'react-icons/hi';
 import NextLink from 'next/link';
-import { getRole } from '@/services/auth';
 import { Role } from '@/types';
-import { QueryClient } from 'react-query';
 
 const Admin: NextPageWithLayout = () => {
     return (
@@ -48,23 +45,6 @@ const Admin: NextPageWithLayout = () => {
                         </Heading>
                     </Card>
                 </Tooltip>
-                <Tooltip hasArrow label='View and Edit Posts'>
-                    <Card
-                        as={NextLink}
-                        href='/admin/posts'
-                        p='5'
-                        textAlign='center'
-                        borderRadius='2xl'
-                        _hover={{ color: 'pink.500', cursor: 'pointer' }}
-                    >
-                        <Center>
-                            <HiOutlineDocumentText size='3rem' />
-                        </Center>
-                        <Heading size='md' mt='5'>
-                            Posts
-                        </Heading>
-                    </Card>
-                </Tooltip>
             </SimpleGrid>
         </Box>
     );
@@ -86,20 +66,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         };
     }
 
-    const queryClient = new QueryClient();
-    try {
-        const role = await queryClient.fetchQuery('getRole', () => getRole(token), {
-            staleTime: Infinity,
-        });
-        if (role !== Role.ADMIN) {
-            return {
-                redirect: {
-                    destination: '/',
-                    permanent: false,
-                },
-            };
-        }
-    } catch (err) {
+    const role = context.req.cookies.role;
+    if (role !== Role.ADMIN) {
         return {
             redirect: {
                 destination: '/',

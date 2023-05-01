@@ -1,5 +1,6 @@
 import { ApiResponse } from '@/types';
 import { CreatePostDto, Post } from '@/types/post';
+import { User } from '@/types/user';
 import axios from 'axios';
 
 const client = axios.create({ baseURL: 'http://localhost:5000/post', withCredentials: true });
@@ -7,6 +8,10 @@ const client = axios.create({ baseURL: 'http://localhost:5000/post', withCredent
 export async function createPost(dto: CreatePostDto): Promise<ApiResponse<Post>> {
     const { data } = await client.post('/create', dto);
     return data;
+}
+
+export async function deletePost(id: string) {
+    await client.delete(`${id}`);
 }
 
 export async function getAllPosts(token?: string): Promise<ApiResponse<Post[]>> {
@@ -24,8 +29,13 @@ export async function getUserFeed(): Promise<ApiResponse<Post[]>> {
     return data;
 }
 
-export async function getClubFeed(): Promise<ApiResponse<Post[]>> {
+export async function getClubPosts(): Promise<ApiResponse<Post[]>> {
     const { data } = await client.get('/club');
+    return data;
+}
+
+export async function getClubPostsById(id: string): Promise<ApiResponse<Post[]>> {
+    const { data } = await client.get(`/club-posts/${id}`);
     return data;
 }
 
@@ -41,5 +51,20 @@ export async function markUnInterested(id: string): Promise<ApiResponse> {
 
 export async function addComment(id: string, content: string): Promise<ApiResponse> {
     const { data } = await client.post(`/comment/${id}`, { content });
+    return data;
+}
+
+export async function getPublicPosts(): Promise<ApiResponse<Post[]>> {
+    const { data } = await client.get('/public');
+    return data;
+}
+
+export async function getPostLikes(id: string): Promise<ApiResponse<{ interested: User[] }>> {
+    const { data } = await client.get(`/likes/${id}`);
+    return data;
+}
+
+export async function getInterestedPosts(): Promise<ApiResponse<Post[]>> {
+    const { data } = await client.get('/interested');
     return data;
 }
