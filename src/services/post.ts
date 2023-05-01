@@ -9,6 +9,10 @@ export async function createPost(dto: CreatePostDto): Promise<ApiResponse<Post>>
     return data;
 }
 
+export async function deletePost(id: string) {
+    await client.delete(`${id}`);
+}
+
 export async function getAllPosts(token?: string): Promise<ApiResponse<Post[]>> {
     const config = token
         ? {
@@ -24,7 +28,7 @@ export async function getUserFeed(): Promise<ApiResponse<Post[]>> {
     return data;
 }
 
-export async function getClubFeed(): Promise<ApiResponse<Post[]>> {
+export async function getClubPosts(): Promise<ApiResponse<Post[]>> {
     const { data } = await client.get('/club');
     return data;
 }
@@ -41,5 +45,10 @@ export async function markUnInterested(id: string): Promise<ApiResponse> {
 
 export async function addComment(id: string, content: string): Promise<ApiResponse> {
     const { data } = await client.post(`/comment/${id}`, { content });
+    return data;
+}
+
+export async function getPublicPosts(): Promise<ApiResponse<Post[]>> {
+    const { data } = await client.get('/public');
     return data;
 }

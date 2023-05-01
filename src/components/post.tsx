@@ -1,4 +1,4 @@
-import { markInterested, markUnInterested } from '@/services/post';
+import { deletePost, markInterested, markUnInterested } from '@/services/post';
 import { Post, Visibility } from '@/types/post';
 import {
     Stack,
@@ -17,15 +17,18 @@ import {
 } from '@chakra-ui/react';
 import ReactHtmlParser from 'html-react-parser';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
+import { DeleteButtonWithAlert } from './admin';
 
 export default function PostCard({
     post,
     refetch,
     toast,
+    deleteButton = false,
 }: {
     post: Post;
     refetch: any;
     toast: (op: UseToastOptions) => ToastId;
+    deleteButton?: boolean;
 }) {
     const onClick = async () => {
         try {
@@ -40,8 +43,20 @@ export default function PostCard({
         }
     };
 
+    const onDelete = async () => {
+        deletePost(post._id)
+            .then(() => refetch())
+            .catch(() =>
+                toast({
+                    title: 'Failed to delete post',
+                    duration: 5000,
+                    status: 'error',
+                }),
+            );
+    };
+
     return (
-        <Card overflow={'hidden'}>
+        <Card>
             <CardHeader>
                 <Stack direction={'row'} spacing={4} align={'center'}>
                     <Avatar name={post.author.name.split(' ')[0]} size='sm' />
@@ -65,6 +80,9 @@ export default function PostCard({
                     >
                         {post.visibility === Visibility.PRIVATE && <span>{post.visibility}</span>}
                     </Text>
+                    {deleteButton && (
+                        <DeleteButtonWithAlert title='Delete Post' onDelete={onDelete} />
+                    )}
                 </Stack>
             </CardHeader>
             <CardBody>
@@ -89,9 +107,12 @@ export default function PostCard({
                 >
                     Interested
                 </Button>
-                <Text color={'gray.700'} fontWeight={600} letterSpacing={1.1} fontSize='sm' mr='4'>
-                    {post.interested.length}
-                </Text>
+                <HStack spacing={3} mr='4'>
+                    <AiFillStar />
+                    <Text color={'gray.700'} fontWeight={500} fontSize='sm'>
+                        {post.interested.length}
+                    </Text>
+                </HStack>
             </CardFooter>
         </Card>
     );
