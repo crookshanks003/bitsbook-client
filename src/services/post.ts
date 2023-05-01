@@ -58,3 +58,8 @@ export async function getPostLikes(id: string): Promise<ApiResponse<{ interested
     const { data } = await client.get(`/likes/${id}`);
     return data;
 }
+
+export async function getInterestedPosts(): Promise<ApiResponse<Post[]>> {
+    const { data } = await client.get('/interested');
+    return data;
+}

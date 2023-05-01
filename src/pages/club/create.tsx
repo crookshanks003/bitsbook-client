@@ -176,6 +176,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             },
         };
     }
+
+    if (role !== Role.CLUB) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false,
+            },
+        };
+    }
     return {
         props: {},
     };

@@ -1,4 +1,4 @@
-import { ApiResponse, PopulatedUser, User } from '@/types';
+import { ApiResponse, Club, PopulatedUser, User } from '@/types';
 import axios from 'axios';
 
 const client = axios.create({ baseURL: 'http://localhost:5000/user', withCredentials: true });
@@ -20,5 +20,12 @@ export async function getPopulatedUserProfile(token?: string): Promise<ApiRespon
           }
         : undefined;
     const { data } = await client.get('/populated-profile', config);
+    return data;
+}
+
+export async function getUserClub(): Promise<
+    ApiResponse<{ role: string; clubId: Club[]; createdAt: string }>
+> {
+    const { data } = await client.get('/clubs');
     return data;
 }

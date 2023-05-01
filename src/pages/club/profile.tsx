@@ -37,26 +37,24 @@ const ClubProfile: NextPageWithLayout = () => {
         <Box mt='10'>
             <Grid templateColumns='repeat(7, 1fr)' gap={4}>
                 <Card as={GridItem} colSpan={4}>
-                    <CardBody as={HStack} justifyContent='space-between'>
-                        <HStack as={HStack} spacing={6}>
-                            <Avatar
-                                size='xl'
-                                name={profile?.payload?.name}
-                                bgColor='pink.500'
-                                color='white'
-                            />
-                            <Box>
-                                <Heading size='lg' color='gray.700'>
-                                    {profile?.payload?.name}
-                                </Heading>
-                                <Text fontWeight={600} fontSize='sm' color='gray.500' mt='2px'>
-                                    {profile?.payload?.userName}
-                                </Text>
-                                <Box mt='4' color='gray.600'>
-                                    {profile?.payload?.description}
-                                </Box>
+                    <CardBody as={HStack} spacing={6}>
+                        <Avatar
+                            size='xl'
+                            name={profile?.payload?.name}
+                            bgColor='pink.500'
+                            color='white'
+                        />
+                        <Box>
+                            <Heading size='lg' color='gray.700'>
+                                {profile?.payload?.name}
+                            </Heading>
+                            <Text fontWeight={600} fontSize='sm' color='gray.500' mt='2px'>
+                                {profile?.payload?.userName}
+                            </Text>
+                            <Box mt='4' color='gray.600'>
+                                {profile?.payload?.description}
                             </Box>
-                        </HStack>
+                        </Box>
                     </CardBody>
                 </Card>
 

@@ -53,18 +53,18 @@ export default function Navbar({ role }: { role: Role }) {
         staleTime: Infinity,
     });
     const links =
-        profile?.payload?.role === Role.USER
+        profile?.payload?.role === Role.CLUB
             ? [
-                  { name: 'Home', href: '/' },
-                  { name: 'Clubs', href: '/clubs' },
-                  { name: 'Notices', href: '/notices' },
-                  { name: 'History', href: '/history' },
-              ]
-            : [
                   { name: 'Home', href: '/' },
                   { name: 'Members', href: '/club/members' },
                   { name: 'Notices', href: '/club/notices' },
                   { name: 'Create', href: '/club/create' },
+              ]
+            : [
+                  { name: 'Home', href: '/' },
+                  { name: 'Clubs', href: '/clubs' },
+                  { name: 'Interested', href: '/interested' },
+                  { name: 'History', href: '/history' },
               ];
 
     const router = useRouter();
