@@ -71,9 +71,9 @@ export default function Navbar({ role }: { role: Role }) {
     const logOut = () => {
         logout()
             .then(() => {
-                remove();
                 destroyCookie(null, 'token');
                 destroyCookie(null, 'role');
+                remove();
                 router.replace('/login');
             })
             .catch();

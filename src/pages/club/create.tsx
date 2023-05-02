@@ -42,28 +42,27 @@ const Create: NextPageWithLayout = () => {
         staleTime: Infinity,
     });
 
-    const handleSubmit = (values: CreatePostDto, actions: FormikHelpers<CreatePostDto>) => {
-        console.log(values);
-        createPost(values)
-            .then(() => {
-                toast({
-                    title: 'Post Created Successfully',
-                    isClosable: true,
-                    duration: 5000,
-                    status: 'success',
-                });
-            })
-            .catch((err) => {
-                if (axios.isAxiosError(err)) {
-                    toast({
-                        title: err.message,
-                        description: err.response?.data.message || 'Could not delete user',
-                        status: 'error',
-                        duration: 5000,
-                        isClosable: true,
-                    });
-                }
+    const handleSubmit = async (values: CreatePostDto, actions: FormikHelpers<CreatePostDto>) => {
+        try {
+            await createPost(values);
+            toast({
+                title: 'Post Created Successfully',
+                isClosable: true,
+                duration: 5000,
+                status: 'success',
             });
+            actions.resetForm();
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                toast({
+                    title: err.message,
+                    description: err.response?.data.message || 'Could not delete user',
+                    status: 'error',
+                    duration: 5000,
+                    isClosable: true,
+                });
+            }
+        }
         actions.setSubmitting(false);
     };
 

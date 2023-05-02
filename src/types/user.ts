@@ -48,7 +48,7 @@ export interface CreateUserDto {
     email: string;
     name: string;
     password: string;
-    role: string;
+    role: Role;
 }
 
 export interface UpdateUserRoleDto {

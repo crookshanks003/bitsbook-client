@@ -30,26 +30,25 @@ const Login: NextPageWithLayout = () => {
     const router = useRouter();
     const toast = useToast();
 
-    const onSubmit = (values: UserLoginDto, actions: FormikHelpers<UserLoginDto>) => {
-        actions.setSubmitting(true);
-        login(values)
-            .then((res) => {
-                router.push('/');
-                setCookie(null, 'role', res.data.payload.role);
-                setCookie(null, 'token', res.data.payload.token);
-                localStorage.setItem('role', res.data.role);
-            })
-            .catch((err) => {
-                if (isAxiosError<ApiResponseError>(err)) {
-                    toast({
-                        title: err.response?.data.message,
-                        isClosable: true,
-                        status: 'error',
-                        duration: 9000,
-                    });
-                }
-                console.log(err);
-            });
+    const onSubmit = async (values: UserLoginDto, actions: FormikHelpers<UserLoginDto>) => {
+        try {
+            const res = await login(values);
+
+            router.push('/');
+            setCookie(null, 'role', res.data.payload.role);
+            setCookie(null, 'token', res.data.payload.token);
+            localStorage.setItem('role', res.data.role);
+        } catch (err) {
+            if (isAxiosError<ApiResponseError>(err)) {
+                toast({
+                    title: err.response?.data.message,
+                    isClosable: true,
+                    status: 'error',
+                    duration: 9000,
+                });
+            }
+            console.log(err);
+        }
         actions.setSubmitting(false);
     };
 
@@ -133,42 +132,33 @@ const Login: NextPageWithLayout = () => {
                             </Form>
                         )}
                     </Formik>
-                    <NextLink href='/' passHref legacyBehavior>
-                        <Link
-                            textAlign='center'
-                            mt='4'
-                            fontWeight='500'
-                            color='pink.500'
-                            _hover={{ textDecoration: 'underline' }}
-                        >
-                            Forgot Password
-                        </Link>
-                    </NextLink>
-                    <Divider color='gray.300' my='4' />
-                    <Center color='gray.500'>
+                    <Center color='gray.500' mt='4' fontSize='sm'>
                         New Here?
-                        <Link
-                            ms='1'
-                            fontWeight='semibold'
-                            color='gray.600'
-                            _hover={{ color: 'pink.500', textDecoration: 'underline' }}
-                        >
-                            Create Account
-                        </Link>
+                        <NextLink href='/register' passHref legacyBehavior>
+                            <Link
+                                ms='1'
+                                fontWeight='semibold'
+                                color='gray.600'
+                                _hover={{ color: 'pink.500', textDecoration: 'underline' }}
+                            >
+                                Create Account
+                            </Link>
+                        </NextLink>
                     </Center>
+                    <Divider color='gray.300' my='4' />
+                    <Text textAlign='center' fontSize='sm' color='gray.500'>
+                        <NextLink href='/club-login' passHref legacyBehavior>
+                            <Link
+                                color='gray.600'
+                                _hover={{ color: 'pink.500', textDecoration: 'underline' }}
+                                fontWeight='semibold'
+                            >
+                                Login
+                            </Link>
+                        </NextLink>{' '}
+                        as a Club
+                    </Text>
                 </Card>
-                <Text textAlign='center' mt='4' fontSize='sm' color='gray.500'>
-                    <NextLink href='/club-login' passHref legacyBehavior>
-                        <Link
-                            color='gray.600'
-                            _hover={{ color: 'pink.500', textDecoration: 'underline' }}
-                            fontWeight='semibold'
-                        >
-                            Login
-                        </Link>
-                    </NextLink>{' '}
-                    as a Club
-                </Text>
             </Box>
         </Flex>
     );

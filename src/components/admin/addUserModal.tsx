@@ -1,4 +1,4 @@
-import { CreateUserDto } from '@/types';
+import { CreateUserDto, Role } from '@/types';
 import {
     Box,
     Input,
@@ -30,7 +30,7 @@ export const AddUserModal = ({
     return (
         <Modal isOpen={isOpen} onClose={onClose} size='lg'>
             <Formik
-                initialValues={{ email: '', name: '', password: '', role: 'user' }}
+                initialValues={{ email: '', name: '', password: '', role: Role.USER }}
                 onSubmit={handleSubmit}
             >
                 {(props) => (

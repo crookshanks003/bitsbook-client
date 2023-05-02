@@ -1,4 +1,11 @@
-import { ApiResponse, ClubLoginDto, NavbarProfile, UserLoginDto, Role } from '@/types';
+import {
+    ApiResponse,
+    ClubLoginDto,
+    NavbarProfile,
+    UserLoginDto,
+    Role,
+    CreateUserDto,
+} from '@/types';
 import axios from 'axios';
 import { serverUrl } from '.';
 
@@ -11,6 +18,10 @@ export async function isLoggedIn(): Promise<ApiResponse<{ loggedIn: boolean; rol
 
 export function login(creds: UserLoginDto) {
     return client.post('/login', creds);
+}
+
+export function register(creds: CreateUserDto) {
+    return client.post('/register', creds);
 }
 
 export function clubLogin(creds: ClubLoginDto) {

@@ -24,26 +24,23 @@ const ClubLogin: NextPageWithLayout = () => {
     const router = useRouter();
     const toast = useToast();
 
-    const onSubmit = (values: ClubLoginDto, actions: FormikHelpers<ClubLoginDto>) => {
-        actions.setSubmitting(true);
-        clubLogin(values)
-            .then((res) => {
-                setCookie(null, 'role', res.data.payload.role);
-                setCookie(null, 'token', res.data.payload.token);
-                localStorage.setItem('role', res.data.role);
-                router.push('/');
-            })
-            .catch((err) => {
-                if (isAxiosError<ApiResponseError>(err)) {
-                    toast({
-                        title: err.response?.data.message,
-                        isClosable: true,
-                        status: 'error',
-                        duration: 9000,
-                    });
-                }
-                console.log(err);
-            });
+    const onSubmit = async (values: ClubLoginDto, actions: FormikHelpers<ClubLoginDto>) => {
+        try {
+            const res = await clubLogin(values);
+            setCookie(null, 'role', res.data.payload.role);
+            setCookie(null, 'token', res.data.payload.token);
+            localStorage.setItem('role', res.data.role);
+            router.push('/');
+        } catch (err) {
+            if (isAxiosError<ApiResponseError>(err)) {
+                toast({
+                    title: err.response?.data.message,
+                    isClosable: true,
+                    status: 'error',
+                    duration: 9000,
+                });
+            }
+        }
         actions.setSubmitting(false);
     };
 
@@ -124,25 +121,21 @@ const ClubLogin: NextPageWithLayout = () => {
                         </Form>
                     )}
                 </Formik>
-                <Link>
-                    <Text
-                        textAlign='center'
-                        mt='4'
-                        color='gray.500'
-                        _hover={{ textDecoration: 'underline', color: 'pink.500' }}
-                    >
-                        Forgot Password
-                    </Text>
-                </Link>
                 <Divider color='gray.300' my='4' />
-                <Text
-                    textAlign='center'
-                    color='gray.500'
-                    _hover={{ color: 'pink.500', textDecoration: 'underline' }}
-                >
-                    <NextLink href='/login'>User Login</NextLink>
-                </Text>
+                <NextLink href='/login' passHref legacyBehavior>
+                    <Link
+                        color='gray.600'
+                        textDecoration='underline'
+                        _hover={{ color: 'pink.500' }}
+                        textAlign='center'
+                    >
+                        User Login
+                    </Link>
+                </NextLink>
             </Card>
+            <Text mt='2' fontSize='xs' textAlign='center'>
+                *Contact administrator to add your club
+            </Text>
         </>
     );
 };
